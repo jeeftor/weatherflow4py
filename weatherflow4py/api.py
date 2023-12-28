@@ -1,7 +1,7 @@
 import aiohttp
 
 from weatherflow4py.models.forecast import WeatherData
-from weatherflow4py.models.station import StationsResponse
+from weatherflow4py.models.station import StationsResponse, Station
 
 
 class WeatherFlowRestAPI:
@@ -18,7 +18,7 @@ class WeatherFlowRestAPI:
         await self.session.close()
 
     async def _make_request(
-        self, endpoint: str, params: dict = None, response_model=None
+            self, endpoint: str, params: dict = None, response_model=None
     ):
         url = f"{self.BASE_URL}/{endpoint}"
         full_params = {"token": self.api_token, **(params or {})}
@@ -50,3 +50,13 @@ class WeatherFlowRestAPI:
             params={"station_id": station_id},
             response_model=WeatherData,
         )
+
+    async def get_all_data(self) -> dict[Station: WeatherData]:
+        """This function will build a full data set of stations & forecasts."""
+
+        ret: dict[Station: WeatherData] = {}
+
+        for station in (await self.async_get_stations()).stations:
+            ret[station] = await self.async_get_forecast(station_id=station.station_id)
+
+        return ret
