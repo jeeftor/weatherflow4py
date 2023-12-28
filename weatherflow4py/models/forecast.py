@@ -1,6 +1,6 @@
 """Model for the forecast endpoint."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List
 from dataclasses_json import dataclass_json
@@ -157,32 +157,32 @@ class ForecastDaily:
     @property
     def rfc3939_datetime(self):
         utc_datetime = datetime.utcfromtimestamp(self.time)
-        return utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
     def ha_forecast(self):
         return {
-        "datetime": self.rfc3939_datetime,
-        "is_daytime": None,
-        "cloud_coverage": None,
-        "condition": self.icon.value,
-        "humidity": None,
-        "native_apparent_temperature": None,
-        "native_dew_point": None,
-        "native_precipitation": None,
-        "native_pressure": None,
-        "native_temperature": self.air_temp_high,
-        "native_templow": self.air_temp_high,
-        "native_wind_gust_speed": None,
-        "native_wind_speed": None,
-        "precipitation_probability": self.precip_probability,
-        "uv_index": None,
-        "wind_bearing": None
+            "datetime": self.rfc3939_datetime,
+            "is_daytime": None,
+            "cloud_coverage": None,
+            "condition": self.icon.value,
+            "humidity": None,
+            "native_apparent_temperature": None,
+            "native_dew_point": None,
+            "native_precipitation": None,
+            "native_pressure": None,
+            "native_temperature": self.air_temp_high,
+            "native_templow": self.air_temp_high,
+            "native_wind_gust_speed": None,
+            "native_wind_speed": None,
+            "precipitation_probability": self.precip_probability,
+            "uv_index": None,
+            "wind_bearing": None,
         }
 
 
 @dataclass_json
-@dataclass(frozen=True, eq=True))
+@dataclass(frozen=True, eq=True)
 class ForecastHourly:
     air_temperature: float
     conditions: Condition
@@ -205,13 +205,13 @@ class ForecastHourly:
     @property
     def rfc3939_datetime(self):
         utc_datetime = datetime.utcfromtimestamp(self.time)
-        return utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
     def ha_forecast(self) -> dict:
         """Property for Home Assistant to use"""
         return {
-            #UTC Date time in RFC 3339 format.
+            # UTC Date time in RFC 3339 format.
             "datetime": self.rfc3939_datetime,
             "condition": self.icon.value,
             "humidity": self.relative_humidity,
@@ -221,9 +221,8 @@ class ForecastHourly:
             "native_wind_gust_speed": int(self.wind_gust),
             "native_wind_speed": self.wind_avg,
             "uv_index": self.uv,
-            "wind_bearing": self.wind_direction
+            "wind_bearing": self.wind_direction,
         }
-
 
 
 @dataclass_json

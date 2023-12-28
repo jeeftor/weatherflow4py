@@ -1,7 +1,7 @@
 import aiohttp
 
 from weatherflow4py.models.forecast import WeatherData
-from weatherflow4py.models.station import StationsResponse, Station
+from weatherflow4py.models.station import StationsResponse
 from weatherflow4py.models.unified import WeatherFlowData
 
 
@@ -19,10 +19,12 @@ class WeatherFlowRestAPI:
         await self.session.close()
 
     async def _make_request(
-            self, endpoint: str, params: dict = None, response_model=None
+        self, endpoint: str, params: dict = None, response_model=None
     ):
         if self.session is None:
-            raise RuntimeError("Session is not initialized. Use the async with statement.")
+            raise RuntimeError(
+                "Session is not initialized. Use the async with statement."
+            )
 
         url = f"{self.BASE_URL}/{endpoint}"
         full_params = {"token": self.api_token, **(params or {})}
@@ -55,12 +57,15 @@ class WeatherFlowRestAPI:
             response_model=WeatherData,
         )
 
-    async def get_all_data(self) -> dict[int,WeatherFlowData]:
+    async def get_all_data(self) -> dict[int, WeatherFlowData]:
         """This function will build a full data set of stations & forecasts."""
 
-        ret: dict[int,WeatherFlowData] = {}
+        ret: dict[int, WeatherFlowData] = {}
         stations = await self.async_get_stations()
         for station in stations:
-            ret[station.station_id] = WeatherFlowData(weather=await self.async_get_forecast(station_id=station.station_id), station=station)
+            ret[station.station_id] = WeatherFlowData(
+                weather=await self.async_get_forecast(station_id=station.station_id),
+                station=station,
+            )
 
         return ret

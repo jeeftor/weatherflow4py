@@ -1,6 +1,11 @@
 import pytest
 
-from weatherflow4py.models.forecast import WeatherData, Forecast, CurrentConditions, Units
+from weatherflow4py.models.forecast import (
+    WeatherData,
+    Forecast,
+    CurrentConditions,
+    Units,
+)
 
 
 def test_convert_json_to_weather_data(forecast_json):
