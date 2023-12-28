@@ -1,0 +1,6 @@
+{
+  "status": {
+    "status_code": 401,
+    "status_message": "UNAUTHORIZED"
+  }
+}
