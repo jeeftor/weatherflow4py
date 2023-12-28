@@ -168,6 +168,7 @@ class Status:
     status_code: int
     status_message: str
 
+
 @dataclass_json
 @dataclass
 class Units:
