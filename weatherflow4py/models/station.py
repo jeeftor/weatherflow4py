@@ -63,7 +63,7 @@ class Capability:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True)
 class Station:
     created_epoch: int
     devices: List[Device]
