@@ -55,12 +55,12 @@ class WeatherFlowRestAPI:
             response_model=WeatherData,
         )
 
-    async def get_all_data(self) -> list[WeatherFlowData]:
+    async def get_all_data(self) -> dict[int,WeatherFlowData]:
         """This function will build a full data set of stations & forecasts."""
 
-        ret: list[WeatherFlowData] = []
+        ret: dict[int,WeatherFlowData] = {}
         stations = await self.async_get_stations()
         for station in stations:
-            ret.append(WeatherFlowData(weather=await self.async_get_forecast(station_id=station.station_id), station=station))
+            ret[station.station_id] = WeatherFlowData(weather=await self.async_get_forecast(station_id=station.station_id), station=station)
 
         return ret
