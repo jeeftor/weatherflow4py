@@ -1,6 +1,7 @@
 """Model for the forecast endpoint."""
 
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import List
 from dataclasses_json import dataclass_json
 from enum import Enum
@@ -144,6 +145,7 @@ class ForecastDaily:
     air_temp_low: float
     conditions: Condition
     day_num: int
+    day_start_local: int
     icon: Icon
     month_num: int
     precip_icon: PrecipIcon
@@ -163,25 +165,34 @@ class ForecastHourly:
     local_day: int
     local_hour: int
     precip: int
+    precip_probability: int
     precip_type: PrecipType
     relative_humidity: int
+    sea_level_pressure: float
     time: int
     uv: float
     wind_avg: float
     wind_direction_cardinal: WindDirection
     wind_direction: float
+    wind_gust: float
+
+    @property
+    def rfc3939_datetime(self):
+        utc_datetime = datetime.utcfromtimestamp(self.time)
+        return  utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     @property
     def ha_forecast(self) -> dict:
         """Property for Home Assistant to use"""
         return {
             #UTC Date time in RFC 3339 format.
-            "datetime": self.time,
+            "datetime": self.rfc3939_datetime,
             "condition": self.icon.value,
             "humidity": self.relative_humidity,
             "native_apparent_temperature": self.feels_like,
             "native_precipitation": self.precip,
             "native_temperature": self.air_temperature,
+            "native_wind_gust_speed": int(self.wind_gust),
             "native_wind_speed": self.wind_avg,
             "uv_index": self.uv,
             "wind_bearing": self.wind_direction
