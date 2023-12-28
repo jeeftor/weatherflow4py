@@ -156,11 +156,11 @@ class ForecastDaily:
 
     @property
     def rfc3939_datetime(self):
-        utc_datetime = datetime.utcfromtimestamp(self.time)
+        utc_datetime = datetime.utcfromtimestamp(self.day_start_local)
         return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
-    def ha_forecast(self):
+    def ha_forecast(self) -> dict:
         return {
             "datetime": self.rfc3939_datetime,
             "is_daytime": None,
