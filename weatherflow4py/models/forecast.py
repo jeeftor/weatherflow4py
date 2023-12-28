@@ -45,6 +45,31 @@ class Icon(Enum):
     THUNDERSTORM = "thunderstorm"
     WINDY = "windy"
 
+    @property
+    def ha_icon(self) -> str:
+        icon_mapping = {
+            Icon.CLEAR_DAY: "sunny",
+            Icon.CLEAR_NIGHT: "clear-night",
+            Icon.CLOUDY: "cloudy",
+            Icon.FOGGY: "fog",
+            Icon.PARTLY_CLOUDY_DAY: "partlycloudy",
+            Icon.PARTLY_CLOUDY_NIGHT: "partlycloudy",
+            Icon.POSSIBLY_RAINY_DAY: "pouring",
+            Icon.POSSIBLY_RAINY_NIGHT: "pouring",
+            Icon.POSSIBLY_SLEET_DAY: "hail",
+            Icon.POSSIBLY_SLEET_NIGHT: "hail",
+            Icon.POSSIBLY_SNOW_DAY: "snowy",
+            Icon.POSSIBLY_SNOW_NIGHT: "snowy",
+            Icon.POSSIBLY_THUNDERSTORM_DAY: "lightning-rainy",
+            Icon.POSSIBLY_THUNDERSTORM_NIGHT: "lightning-rainy",
+            Icon.RAINY: "rainy",
+            Icon.SLEET: "hail",
+            Icon.SNOW: "snowy",
+            Icon.THUNDERSTORM: "lightning",
+            Icon.WINDY: "windy-variant",
+        }
+        return icon_mapping.get(self, "exceptional")
+
 
 class PrecipType(Enum):
     RAIN = "rain"

@@ -25,3 +25,13 @@ def test_convert_json_to_weather_data(forecast_json):
     assert isinstance(weather_data.timezone, str)
     assert isinstance(weather_data.timezone_offset_minutes, int)
     assert isinstance(weather_data.units, Units)
+
+
+def test_convert_weather_data_ha_forecast(forecast_json):
+    try:
+        weather_data = WeatherData.from_dict(forecast_json)
+    except Exception as e:
+        pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
+
+    forecasts = [x.ha_forecast for x in weather_data.forecast.daily]
+    print(forecasts)
