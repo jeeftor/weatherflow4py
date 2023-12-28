@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "weatherflow4py"
+version = "0.1.0"
+description = ""
+authors = ["Jeef <jeeftor@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+httpx = "^0.26.0"
+dataclasses-json = "^0.6.3"
+
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^3.6.0"
+ruff = "^0.1.9"
+mypy = "^1.8.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
