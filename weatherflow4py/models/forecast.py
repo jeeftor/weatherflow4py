@@ -100,13 +100,28 @@ class VisibilityUnit(Enum):
     MILES = "mi"
 
 
+@dataclass_json
+@dataclass(frozen=True, eq=True)
 class CurrentConditions:
     air_density: float
     air_temperature: float
     brightness: int
     conditions: Condition
+    delta_t: float  # Added missing field
     dew_point: float
     feels_like: float
+    icon: Icon  # Added missing field
+    is_precip_local_day_rain_check: bool
+    is_precip_local_yesterday_rain_check: bool
+    lightning_strike_count_last_1hr: int
+    lightning_strike_count_last_3hr: int
+    lightning_strike_last_distance: int
+    lightning_strike_last_distance_msg: str
+    lightning_strike_last_epoch: int
+    precip_accum_local_day: int
+    precip_accum_local_yesterday: int
+    precip_minutes_local_day: int
+    precip_minutes_local_yesterday: int
     pressure_trend: PressureTrend
     relative_humidity: int
     sea_level_pressure: float
@@ -114,6 +129,8 @@ class CurrentConditions:
     station_pressure: float
     time: int
     uv: int
+    wet_bulb_globe_temperature: float
+    wet_bulb_temperature: float
     wind_avg: float
     wind_direction: float
     wind_direction_cardinal: WindDirection
@@ -171,7 +188,6 @@ class Status:
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
-
 class Units:
     units_air_density: str
     units_brightness: str
