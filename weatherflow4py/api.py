@@ -58,8 +58,8 @@ class WeatherFlowRestAPI:
         """This function will build a full data set of stations & forecasts."""
 
         ret: dict[Station: WeatherData] = {}
-
-        for station in (await self.async_get_stations()).stations:
+        stations = await self.async_get_stations()
+        for station in stations:
             ret[station] = await self.async_get_forecast(station_id=station.station_id)
 
         return ret
