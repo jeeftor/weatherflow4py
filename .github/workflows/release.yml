@@ -20,6 +20,7 @@ jobs:
         with:
           fetch-depth: 2
 
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -45,11 +46,13 @@ jobs:
 
       - name: Detect and tag new version
         id: check-version
+
         if: steps.check-parent-commit.outputs.sha
         uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
           version-command: |
             bash -o pipefail -c "poetry version -s"
+      
 
       - name: Bump version for developmental release
         if: "! steps.check-version.outputs.tag"
