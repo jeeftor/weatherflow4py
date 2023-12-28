@@ -1,4 +1,5 @@
 # models/unified_station.py
+from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import List, Optional
@@ -6,7 +7,7 @@ from dataclasses_json import dataclass_json
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class DeviceMeta:
     agl: float
     environment: str
@@ -15,13 +16,13 @@ class DeviceMeta:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class DeviceSettings:
     show_precip_final: bool
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class Device:
     device_id: int
     device_meta: DeviceMeta
@@ -33,7 +34,7 @@ class Device:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class StationItem:
     device_id: int
     item: str
@@ -45,7 +46,7 @@ class StationItem:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class StationMeta:
     elevation: float
     share_with_wf: bool
@@ -53,7 +54,7 @@ class StationMeta:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class Capability:
     capability: str
     device_id: int
@@ -63,10 +64,10 @@ class Capability:
 
 
 @dataclass_json
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class Station:
     created_epoch: int
-    devices: List[Device]
+    devices: list[Device]
     is_local_mode: bool
     last_modified_epoch: int
     latitude: float
@@ -74,11 +75,11 @@ class Station:
     name: str
     public_name: str
     station_id: int
-    station_items: List[StationItem]
+    station_items: list[StationItem]
     station_meta: StationMeta
     timezone: str
     timezone_offset_minutes: int
-    capabilities: Optional[List[Capability]] = None  # Optional field for capabilities
+    capabilities: list[Capability] | None = None  # Optional field for capabilities
 
     @property
     def elevation(self) -> float:
@@ -86,14 +87,14 @@ class Station:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class Status:
     status_code: int
     status_message: str
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, order=True)
 class StationsResponse:
-    stations: List[Station]
+    stations: list[Station]
     status: Status

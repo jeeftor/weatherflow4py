@@ -20,6 +20,9 @@ async def main():
             forecast = await api.async_get_forecast(station_id=station.station_id)
             print(forecast.units)
 
+            # Hash Testing
+
+
 
 if __name__ == "__main__":
     asyncio.run(main())

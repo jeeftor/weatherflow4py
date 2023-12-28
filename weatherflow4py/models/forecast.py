@@ -121,7 +121,7 @@ class CurrentConditions:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class ForecastDaily:
     air_temp_high: float
     air_temp_low: float
@@ -137,7 +137,7 @@ class ForecastDaily:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class ForecastHourly:
     air_temperature: float
     conditions: Condition
@@ -156,21 +156,22 @@ class ForecastHourly:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Forecast:
     daily: List[ForecastDaily]
     hourly: List[ForecastHourly]
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Status:
     status_code: int
     status_message: str
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
+
 class Units:
     units_air_density: str
     units_brightness: str
@@ -184,7 +185,7 @@ class Units:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class WeatherData:
     current_conditions: CurrentConditions
     forecast: Forecast

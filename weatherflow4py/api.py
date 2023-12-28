@@ -2,6 +2,7 @@ import aiohttp
 
 from weatherflow4py.models.forecast import WeatherData
 from weatherflow4py.models.station import StationsResponse, Station
+from weatherflow4py.models.unified import WeatherFlowData
 
 
 class WeatherFlowRestAPI:
@@ -54,12 +55,12 @@ class WeatherFlowRestAPI:
             response_model=WeatherData,
         )
 
-    async def get_all_data(self) -> dict[Station: WeatherData]:
+    async def get_all_data(self) -> list[WeatherFlowData]:
         """This function will build a full data set of stations & forecasts."""
 
-        ret: dict[Station: WeatherData] = {}
+        ret: list[WeatherFlowData] = []
         stations = await self.async_get_stations()
         for station in stations:
-            ret[station] = await self.async_get_forecast(station_id=station.station_id)
+            ret.append(WeatherFlowData(weather=await self.async_get_forecast(station_id=station.station_id), station=station))
 
         return ret
