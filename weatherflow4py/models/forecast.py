@@ -172,7 +172,7 @@ class ForecastHourly:
     wind_direction: float
 
     @property
-    def HAForecast(self) -> dict:
+    def ha_forecast(self) -> dict:
         """Property for Home Assistant to use"""
         return {
             #UTC Date time in RFC 3339 format.
