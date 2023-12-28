@@ -154,9 +154,35 @@ class ForecastDaily:
     sunrise: int
     sunset: int
 
+    @property
+    def rfc3939_datetime(self):
+        utc_datetime = datetime.utcfromtimestamp(self.time)
+        return utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+
+    @property
+    def ha_forecast(self):
+        return {
+        "datetime": self.rfc3939_datetime,
+        "is_daytime": None,
+        "cloud_coverage": None,
+        "condition": self.icon.value,
+        "humidity": None,
+        "native_apparent_temperature": None,
+        "native_dew_point": None,
+        "native_precipitation": None,
+        "native_pressure": None,
+        "native_temperature": self.air_temp_high,
+        "native_templow": self.air_temp_high,
+        "native_wind_gust_speed": None,
+        "native_wind_speed": None,
+        "precipitation_probability": self.precip_probability,
+        "uv_index": None,
+        "wind_bearing": None
+        }
+
 
 @dataclass_json
-@dataclass(frozen=True, eq=True)
+@dataclass(frozen=True, eq=True))
 class ForecastHourly:
     air_temperature: float
     conditions: Condition
@@ -179,7 +205,7 @@ class ForecastHourly:
     @property
     def rfc3939_datetime(self):
         utc_datetime = datetime.utcfromtimestamp(self.time)
-        return  utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
+        return utc_datetime.strftime('%Y-%m-%dT%H:%M:%SZ')
 
     @property
     def ha_forecast(self) -> dict:
