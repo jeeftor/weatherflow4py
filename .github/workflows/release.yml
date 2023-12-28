@@ -13,8 +13,9 @@ jobs:
     name: Release
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
+      id-token: read
       contents: write
+      actions: write
     steps:
       - name: Check out the repository
         uses: actions/checkout@v4
