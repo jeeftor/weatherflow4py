@@ -20,6 +20,9 @@ class WeatherFlowRestAPI:
     async def _make_request(
             self, endpoint: str, params: dict = None, response_model=None
     ):
+        if self.session is None:
+            raise RuntimeError("Session is not initialized. Use the async with statement.")
+
         url = f"{self.BASE_URL}/{endpoint}"
         full_params = {"token": self.api_token, **(params or {})}
         async with self.session.get(url, params=full_params) as response:
