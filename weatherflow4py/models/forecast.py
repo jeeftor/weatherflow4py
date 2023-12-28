@@ -1,6 +1,6 @@
 """Model for the forecast endpoint."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import List
 from dataclasses_json import dataclass_json
 from enum import Enum
@@ -170,6 +170,23 @@ class ForecastHourly:
     wind_avg: float
     wind_direction_cardinal: WindDirection
     wind_direction: float
+
+    @property
+    def HAForecast(self) -> dict:
+        """Property for Home Assistant to use"""
+        return {
+            #UTC Date time in RFC 3339 format.
+            "datetime": self.time,
+            "condition": self.icon.value,
+            "humidity": self.relative_humidity,
+            "native_apparent_temperature": self.feels_like,
+            "native_precipitation": self.precip,
+            "native_temperature": self.air_temperature,
+            "native_wind_speed": self.wind_avg,
+            "uv_index": self.uv,
+            "wind_bearing": self.wind_direction
+        }
+
 
 
 @dataclass_json
