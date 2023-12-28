@@ -190,7 +190,7 @@ class ForecastDaily:
             "datetime": self.rfc3939_datetime,
             "is_daytime": None,
             "cloud_coverage": None,
-            "condition": self.icon.value,
+            "condition": self.icon.ha_icon,
             "humidity": None,
             "native_apparent_temperature": None,
             "native_dew_point": None,
@@ -238,7 +238,7 @@ class ForecastHourly:
         return {
             # UTC Date time in RFC 3339 format.
             "datetime": self.rfc3939_datetime,
-            "condition": self.icon.value,
+            "condition": self.icon.ha_icon,
             "humidity": self.relative_humidity,
             "native_apparent_temperature": self.feels_like,
             "native_precipitation": self.precip,
