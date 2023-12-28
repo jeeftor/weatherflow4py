@@ -15,7 +15,6 @@ jobs:
     permissions:
       contents: write
       actions: write
-      id-token: read
 
     steps:
       - name: Check out the repository
