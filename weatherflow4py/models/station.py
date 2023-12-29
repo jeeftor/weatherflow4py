@@ -82,6 +82,16 @@ class Station:
     capabilities: list[Capability] | None = None  # Optional field for capabilities
 
     @property
+    def outdoor_devices(self) -> list[Device]:
+        """Return a list of outdoor devices."""
+        return [d for d in self.devices if d.device_type == "ST"]
+
+    @property
+    def indoor_devices(self) -> list[Device]:
+        """Return a list of indoor devices."""
+        return [d for d in self.devices if d.device_type != "ST"]
+
+    @property
     def elevation(self) -> float:
         return self.station_meta.elevation
 
