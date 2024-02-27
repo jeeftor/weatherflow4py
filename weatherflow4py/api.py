@@ -114,6 +114,9 @@ class WeatherFlowRestAPI:
         for station in stations:
             ret[station.station_id] = WeatherFlowData(
                 weather=await self.async_get_forecast(station_id=station.station_id),
+                observation=await self.async_get_observation(
+                    station_id=station.station_id
+                ),  # noqa: E501
                 station=station,
             )
 
