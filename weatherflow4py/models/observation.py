@@ -4,7 +4,7 @@ from dataclasses_json import dataclass_json
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
 class Observation:
     air_density: float
     air_temperature: float
@@ -46,7 +46,26 @@ class Observation:
 
 
 @dataclass_json
-@dataclass
+@dataclass(frozen=True, eq=True)
+class StationUnits:
+    units_temp: str
+    units_wind: str
+    units_precip: str
+    units_pressure: str
+    units_distance: str
+    units_direction: str
+    units_other: str
+
+
+@dataclass_json
+@dataclass(frozen=True, eq=True)
+class StationStatus:
+    status_code: int
+    status_message: str
+
+
+@dataclass_json
+@dataclass(frozen=True, eq=True)
 class StationObservation:
     elevation: float
     is_public: bool
@@ -57,6 +76,6 @@ class StationObservation:
     public_name: str
     station_id: int
     station_name: str
-    station_units: dict
-    status: dict
+    station_units: StationUnits
+    status: StationStatus
     timezone: str

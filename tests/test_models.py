@@ -4,7 +4,7 @@ from weatherflow4py.models.forecast import (
     WeatherData,
     Forecast,
     CurrentConditions,
-    Units,
+    ForecastUnits,
 )
 from weatherflow4py.models.observation import StationObservation
 
@@ -108,7 +108,7 @@ def test_convert_json_to_weather_data(forecast_json):
     assert isinstance(weather_data.location_name, str)
     assert isinstance(weather_data.timezone, str)
     assert isinstance(weather_data.timezone_offset_minutes, int)
-    assert isinstance(weather_data.units, Units)
+    assert isinstance(weather_data.units, ForecastUnits)
 
 
 def test_convert_weather_data_ha_forecast(forecast_json):
