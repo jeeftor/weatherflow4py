@@ -266,7 +266,7 @@ class Status:
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
-class Units:
+class ForecastUnits:
     units_air_density: str
     units_brightness: str
     units_distance: str
@@ -288,4 +288,4 @@ class WeatherData:
     location_name: str
     timezone: str
     timezone_offset_minutes: int
-    units: Units
+    units: ForecastUnits

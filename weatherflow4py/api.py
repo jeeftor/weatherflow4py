@@ -2,6 +2,7 @@ import aiohttp
 
 from weatherflow4py.exceptions import TokenError
 from weatherflow4py.models.forecast import WeatherData
+from weatherflow4py.models.observation import StationObservation
 from weatherflow4py.models.station import StationsResponse
 from weatherflow4py.models.unified import WeatherFlowData
 
@@ -85,6 +86,22 @@ class WeatherFlowRestAPI:
             response_model=WeatherData,
         )
 
+    async def async_get_observation(self, station_id: int) -> StationObservation:
+        """
+        Gets the observation data for a given station.
+
+        Args:
+            station_id (int): The ID of the station.
+
+        Raises:
+            ClientResponseError: If there is a client response error.
+        """
+        return await self._make_request(
+            "observations/station",
+            params={"station_id": station_id},
+            response_model=StationObservation,
+        )
+
     async def get_all_data(self) -> dict[int, WeatherFlowData]:
         """
         Builds a full data set of stations and forecasts.
@@ -97,6 +114,9 @@ class WeatherFlowRestAPI:
         for station in stations:
             ret[station.station_id] = WeatherFlowData(
                 weather=await self.async_get_forecast(station_id=station.station_id),
+                observation=await self.async_get_observation(
+                    station_id=station.station_id
+                ),  # noqa: E501
                 station=station,
             )
 
