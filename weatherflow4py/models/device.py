@@ -70,7 +70,10 @@ class DeviceObservation:
 @dataclass_json
 @dataclass
 class DeviceObservationTempest(DeviceObservation):
-    """Define the specific properties of a Tempest observation"""
+    """Define the specific properties of a Tempest observation
+
+    In local testing this is really the only "thing" that ever seems to show up.
+    """
 
     @property
     def wind_lull(self) -> float:

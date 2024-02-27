@@ -32,6 +32,11 @@ async def main():
 
             print(obs.obs[0].air_temperature)
 
+            device_obs = await api.async_get_device_observations(
+                station.outdoor_devices[0].device_id
+            )
+            print(device_obs.precipitation_type)
+
 
 if __name__ == "__main__":
     asyncio.run(main())

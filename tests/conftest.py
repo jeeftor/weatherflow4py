@@ -5,22 +5,6 @@ from weatherflow4py.api import WeatherFlowRestAPI
 
 
 @pytest.fixture
-def obs_sky_json() -> dict:
-    """Load the obs_sky.json fixture file."""
-    with open("fixtures/obs_sky.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
-
-
-@pytest.fixture
-def obs_air_json() -> dict:
-    """Load the obs_air.json fixture file."""
-    with open("fixtures/obs_air.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
-
-
-@pytest.fixture
 def obs_st_json() -> dict:
     """Load the obs_st.json fixture file."""
     with open("fixtures/obs_st.json", "r") as json_file:

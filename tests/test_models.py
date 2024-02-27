@@ -127,23 +127,6 @@ def test_convert_weather_data_ha_forecast(forecast_json):
     print(forecasts)
 
 
-# def test_obs_sky(obs_sky_json):
-#     try:
-#         obs_sky = ObsSky.from_dict(obs_sky_json)
-#     except Exception as e:
-#         pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
-#
-#     assert isinstance(obs_sky, ObsSky)
-#
-# def test_obs_air(obs_air_json):
-#     try:
-#         obs_air = ObsAir.from_dict(obs_air_json)
-#     except Exception as e:
-#         pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
-#
-#     assert isinstance(obs_air, ObsAir)
-
-
 def test_obs_st(obs_st_json):
     try:
         obs_st = DeviceObservationTempest.from_dict(obs_st_json)
