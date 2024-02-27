@@ -4,7 +4,7 @@
       "created_epoch": 1658343273,
       "devices": [
         {
-          "device_id": 8341521,
+          "device_id": 7654321,
           "device_meta": {
             "agl": 1.8288,
             "environment": "indoor",
@@ -18,7 +18,7 @@
           "serial_number": "HB-00068123"
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "device_meta": {
             "agl": 1.8288,
             "environment": "outdoor",
@@ -45,7 +45,7 @@
       "station_id": 24432,
       "station_items": [
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "air_temperature_humidity",
           "location_id": 24432,
           "location_item_id": 657904,
@@ -54,7 +54,7 @@
           "station_item_id": 657904
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "barometric_pressure",
           "location_id": 24432,
           "location_item_id": 657906,
@@ -63,7 +63,7 @@
           "station_item_id": 657906
         },
         {
-          "device_id": 8341521,
+          "device_id": 7654321,
           "item": "diagnostics",
           "location_id": 24432,
           "location_item_id": 657912,
@@ -71,7 +71,7 @@
           "station_item_id": 657912
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "diagnostics",
           "location_id": 24432,
           "location_item_id": 657913,
@@ -80,7 +80,7 @@
           "station_item_id": 657913
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "light",
           "location_id": 24432,
           "location_item_id": 657908,
@@ -89,7 +89,7 @@
           "station_item_id": 657908
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "lightning",
           "location_id": 24432,
           "location_item_id": 657905,
@@ -98,7 +98,7 @@
           "station_item_id": 657905
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "rain",
           "location_id": 24432,
           "location_item_id": 657907,
@@ -107,7 +107,7 @@
           "station_item_id": 657907
         },
         {
-          "device_id": 211522,
+          "device_id": 123456,
           "item": "wind",
           "location_id": 24432,
           "location_item_id": 657909,

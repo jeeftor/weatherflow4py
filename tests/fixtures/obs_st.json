@@ -1,0 +1,49 @@
+{
+  "status": {
+    "status_code": 0,
+    "status_message": "SUCCESS"
+  },
+  "device_id": 123456,
+  "type": "obs_st",
+  "source": "cache",
+  "summary": {
+    "pressure_trend": "rising",
+    "strike_count_1h": 0,
+    "strike_count_3h": 0,
+    "precip_total_1h": 0.478541,
+    "strike_last_dist": 26,
+    "strike_last_epoch": 1707346875,
+    "precip_accum_local_yesterday": 0.0,
+    "precip_accum_local_yesterday_final": 0.0,
+    "precip_analysis_type_yesterday": 0,
+    "feels_like": -6.9,
+    "heat_index": -3.7,
+    "wind_chill": -6.9
+  },
+  "obs": [
+    [
+      1709057252,
+      0.77,
+      2.07,
+      3.98,
+      58,
+      3,
+      781.9,
+      -3.7,
+      88,
+      14155,
+      0.49,
+      118,
+      0,
+      0,
+      0,
+      0,
+      2.75,
+      1,
+      0.478541,
+      0,
+      1.146458,
+      0
+    ]
+  ]
+}

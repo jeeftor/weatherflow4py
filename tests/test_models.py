@@ -1,5 +1,11 @@
 import pytest
 
+from weatherflow4py.models.device import (
+    DeviceObservationTempest,
+    DeviceObservationType,
+    ObservationPrecipitationAnalysisType,
+    ObservationPrecipitationType,
+)
 from weatherflow4py.models.forecast import (
     WeatherData,
     Forecast,
@@ -119,3 +125,90 @@ def test_convert_weather_data_ha_forecast(forecast_json):
 
     forecasts = [x.ha_forecast for x in weather_data.forecast.daily]
     print(forecasts)
+
+
+# def test_obs_sky(obs_sky_json):
+#     try:
+#         obs_sky = ObsSky.from_dict(obs_sky_json)
+#     except Exception as e:
+#         pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
+#
+#     assert isinstance(obs_sky, ObsSky)
+#
+# def test_obs_air(obs_air_json):
+#     try:
+#         obs_air = ObsAir.from_dict(obs_air_json)
+#     except Exception as e:
+#         pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
+#
+#     assert isinstance(obs_air, ObsAir)
+
+
+def test_obs_st(obs_st_json):
+    try:
+        obs_st = DeviceObservationTempest.from_dict(obs_st_json)
+    except Exception as e:
+        pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
+
+    assert isinstance(obs_st, DeviceObservationTempest)
+    assert obs_st.epoch == 1709057252
+    assert obs_st.wind_lull == 0.77
+    assert obs_st.wind_avg == 2.07
+    assert obs_st.wind_gust == 3.98
+    assert obs_st.wind_direction == 58
+    assert obs_st.wind_sample_interval == obs_st_json["obs"][0][5]
+    assert obs_st.pressure == obs_st_json["obs"][0][6]
+    assert obs_st.air_temperature == obs_st_json["obs"][0][7]
+
+    assert obs_st.status.status_code == obs_st_json["status"]["status_code"]
+    assert obs_st.status.status_message == obs_st_json["status"]["status_message"]
+    assert obs_st.device_id == obs_st_json["device_id"]
+    assert obs_st.type == DeviceObservationType.STATION
+    assert obs_st.source == obs_st_json["source"]
+    assert obs_st.summary.pressure_trend == obs_st_json["summary"]["pressure_trend"]
+    assert obs_st.summary.strike_count_1h == obs_st_json["summary"]["strike_count_1h"]
+    assert obs_st.summary.strike_count_3h == obs_st_json["summary"]["strike_count_3h"]
+    assert obs_st.summary.precip_total_1h == obs_st_json["summary"]["precip_total_1h"]
+    assert obs_st.summary.strike_last_dist == obs_st_json["summary"]["strike_last_dist"]
+    assert (
+        obs_st.summary.strike_last_epoch == obs_st_json["summary"]["strike_last_epoch"]
+    )
+    assert (
+        obs_st.summary.precip_accum_local_yesterday
+        == obs_st_json["summary"]["precip_accum_local_yesterday"]
+    )
+    assert (
+        obs_st.summary.precip_accum_local_yesterday_final
+        == obs_st_json["summary"]["precip_accum_local_yesterday_final"]
+    )
+    assert (
+        obs_st.summary.precip_analysis_type_yesterday
+        == ObservationPrecipitationAnalysisType.NONE
+    )
+    assert obs_st.summary.feels_like == obs_st_json["summary"]["feels_like"]
+    assert obs_st.summary.heat_index == obs_st_json["summary"]["heat_index"]
+    assert obs_st.summary.wind_chill == obs_st_json["summary"]["wind_chill"]
+    assert obs_st.epoch == obs_st_json["obs"][0][0]
+    assert obs_st.wind_lull == obs_st_json["obs"][0][1]
+    assert obs_st.wind_avg == obs_st_json["obs"][0][2]
+    assert obs_st.wind_gust == obs_st_json["obs"][0][3]
+    assert obs_st.wind_direction == obs_st_json["obs"][0][4]
+    assert obs_st.wind_sample_interval == obs_st_json["obs"][0][5]
+    assert obs_st.pressure == obs_st_json["obs"][0][6]
+    assert obs_st.air_temperature == obs_st_json["obs"][0][7]
+    assert obs_st.relative_humidity == obs_st_json["obs"][0][8]
+    assert obs_st.illuminance == obs_st_json["obs"][0][9]
+    assert obs_st.uv == obs_st_json["obs"][0][10]
+    assert obs_st.solar_radiation == obs_st_json["obs"][0][11]
+    assert obs_st.rain_accumulation == obs_st_json["obs"][0][12]
+    assert obs_st.precipitation_type == ObservationPrecipitationType.NONE
+    assert obs_st.average_strike_distance == obs_st_json["obs"][0][14]
+    assert obs_st.strike_count == obs_st_json["obs"][0][15]
+    assert obs_st.battery == obs_st_json["obs"][0][16]
+    assert obs_st.report_interval == obs_st_json["obs"][0][17]
+    assert obs_st.local_day_rain_accumulation == obs_st_json["obs"][0][18]
+    assert obs_st.nc_rain_accumulation == obs_st_json["obs"][0][19]
+    assert obs_st.local_day_nc_rain_accumulation == obs_st_json["obs"][0][20]
+    assert (
+        obs_st.precipitation_analysis_type == ObservationPrecipitationAnalysisType.NONE
+    )
