@@ -1,6 +1,15 @@
 from dataclasses import dataclass
+from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json
+
+
+class WetBulbFlag(Enum):
+    WHITE = 1
+    GREEN = 2
+    YELLOW = 3
+    RED = 4
+    BLACK = 5
 
 
 @dataclass_json
@@ -44,10 +53,29 @@ class Observation:
     wind_gust: float
     wind_lull: float
 
+    @property
+    def wet_bulb_globe_temperature_category(self) -> int:
+        """Calculates a wet bulb globe temp category - based on wikipedia: https://en.wikipedia.org/wiki/Wet-bulb_globe_temperature."""
+
+        if self.wet_bulb_globe_temperature <= 25.6:
+            return 1  # Low risk
+        if self.wet_bulb_globe_temperature <= 29.4:
+            return 2  # Moderate risk
+        if self.wet_bulb_globe_temperature <= 31.0:
+            return 3
+        if self.wet_bulb_globe_temperature <= 32.1:
+            return 4
+        return 5
+
+    def wet_bulb_globe_temperature_flag(self) -> WetBulbFlag:
+        return WetBulbFlag(self.wet_bulb_globe_temperature)
+
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class StationUnits:
+    """The station_units values represent the units of the Station's owner, not the units of the observation values in the API response."""
+
     units_temp: str
     units_wind: str
     units_precip: str

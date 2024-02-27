@@ -8,6 +8,8 @@ from weatherflow4py.models.unified import WeatherFlowData
 
 
 class WeatherFlowRestAPI:
+    """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per minute. There is some burst capacity built into the system, but the general rule of thumb it to keep the number of REST requests per user to under 100 per minute."""
+
     BASE_URL = "https://swd.weatherflow.com/swd/rest"
 
     def __init__(self, api_token: str):
