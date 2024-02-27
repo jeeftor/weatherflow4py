@@ -2,10 +2,13 @@ import asyncio
 import os
 
 from weatherflow4py.api import WeatherFlowRestAPI
+from dotenv import load_dotenv
 
 
 async def main():
-    token = os.getenv("API_TOKEN")
+    load_dotenv()  # load environment variables from .env file
+
+    token = os.getenv("TOKEN")
     async with WeatherFlowRestAPI(token) as api:
         stations = await api.async_get_stations()
         for station in stations:
@@ -20,7 +23,8 @@ async def main():
             forecast = await api.async_get_forecast(station_id=station.station_id)
             print(forecast.units)
 
-            # Hash Testing
+            obs = await api.async_get_observation(station_id=station.station_id)
+            print(obs)
 
 
 if __name__ == "__main__":
