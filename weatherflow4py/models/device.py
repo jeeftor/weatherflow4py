@@ -52,6 +52,7 @@ class DeviceObservationREST:
     summary: Summary
     obs: List[Union[obs_sky, obs_st, obs_air]]  # Add this line
 
+    #
     def __post_init__(self):
         # Transform the raw observation data into the correct instances
         self.obs = ObservationFactory.create_observation(self.type, self.obs)

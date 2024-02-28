@@ -98,6 +98,11 @@ class ObservationFactory:
         obs_type: ObservationType, obs_data: List[List[Any]]
     ) -> List[Union[obs_sky, obs_st, obs_air]]:
         """Create observation instances from a list of lists."""
+
+        # if type(obs_data[0]) != list:
+        #     print("OBS Data is already correct - aborting")
+        #     return obs_data
+
         obs_class_map = {
             ObservationType.OBS_SKY: obs_sky,
             ObservationType.OBS_ST: obs_st,
@@ -117,29 +122,38 @@ class WebsocketObservation:
     device_id: int
     obs: List[Union[obs_sky, obs_st, obs_air]]
 
-    @classmethod
-    def from_json(cls, json_data: dict[str, Any]) -> "WebsocketObservation":
-        """Create a WebsocketObservation instance from a JSON dictionary."""
-        obs_type = ObservationType(json_data["type"])
-        obs_data: list[obs_sky | obs_air | obs_st] = json_data["obs"]
-        observation_instances = ObservationFactory.create_observation(
-            obs_type, obs_data
-        )
-        return cls(
-            type=obs_type, device_id=json_data["device_id"], obs=observation_instances
-        )
+    def __post_init__(self):
+        # Transform the raw observation data into the correct instances
+        self.type = ObservationType(self.type)
 
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]) -> "WebsocketObservation":
-        """Create a WebsocketObservation instance from a dictionary."""
-        obs_type = ObservationType(data["type"])
-        obs_data: list[obs_sky | obs_air | obs_st] = data["obs"]
-        observation_instances = ObservationFactory.create_observation(
-            obs_type, obs_data
-        )
-        return cls(
-            type=obs_type, device_id=data["device_id"], obs=observation_instances
-        )
+        # TODO: Figure out why sometimes this gets called twice and why we need the logic
+        # if not isinstance(self.obs[0], (obs_sky, obs_st, obs_air)):
+        self.obs = ObservationFactory.create_observation(self.type, self.obs)
+
+    #
+    # @classmethod
+    # def from_json(cls, json_data: dict[str, Any]) -> "WebsocketObservation":
+    #     """Create a WebsocketObservation instance from a JSON dictionary."""
+    #     obs_type = ObservationType(json_data["type"])
+    #     obs_data: list[obs_sky | obs_air | obs_st] = json_data["obs"]
+    #     observation_instances = ObservationFactory.create_observation(
+    #         obs_type, obs_data
+    #     )
+    #     return cls(
+    #         type=obs_type, device_id=json_data["device_id"], obs=observation_instances
+    #     )
+    #
+    # @classmethod
+    # def from_dict(cls, data: dict[str, Any]) -> "WebsocketObservation":
+    #     """Create a WebsocketObservation instance from a dictionary."""
+    #     obs_type = ObservationType(data["type"])
+    #     obs_data: list[obs_sky | obs_air | obs_st] = data["obs"]
+    #     observation_instances = ObservationFactory.create_observation(
+    #         obs_type, obs_data
+    #     )
+    #     return cls(
+    #         type=obs_type, device_id=data["device_id"], obs=observation_instances
+    #     )
 
     @property
     def first(self) -> obs_sky | obs_air | obs_st:

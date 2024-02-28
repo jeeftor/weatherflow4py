@@ -13,7 +13,7 @@ from weatherflow4py.models.forecast import (
     CurrentConditions,
     ForecastUnits,
 )
-from weatherflow4py.models.obs import WebsocketObservation, ObservationType
+from weatherflow4py.models.obs import ObservationType
 from weatherflow4py.models.observation import StationObservation
 
 
@@ -200,17 +200,3 @@ def test_obs_st(obs_st_json):
     assert obs_st.nc_rain_accumulation == obs_st_json["obs"][0][19]
     assert obs_st.local_day_nc_rain_accumulation == obs_st_json["obs"][0][20]
     assert obs_st.precipitation_analysis_type == PrecipitationAnalysisType.NONE
-
-
-def test_websocket_air(ws_obs_st, ws_obs_air, ws_obs_sky, ws_obs_st_3x):
-    obs_air = WebsocketObservation.from_json(ws_obs_air)
-    obs_st = WebsocketObservation.from_json(ws_obs_st)
-    obs_st_3x = WebsocketObservation.from_json(ws_obs_st_3x)
-
-    obs_sky = WebsocketObservation.from_json(ws_obs_sky)
-
-    assert obs_air.type == ObservationType.OBS_AIR
-    assert obs_st.type == ObservationType.OBS_ST
-    assert obs_sky.type == ObservationType.OBS_SKY
-
-    print(obs_st_3x.first)

@@ -25,6 +25,20 @@ class RainStartEventWS(BaseResponseWS):
     device_id: int
 
 
+@dataclass
+class EventDataLightningStrike:
+    epoch: int
+    distance_km: int
+    energy: int
+
+
+@dataclass
+class EventDataRapidWind:
+    epoch: int
+    wind_speed_meters_per_second: int
+    wind_direction_degrees: int
+
+
 @dataclass_json
 @dataclass
 class LightningStrikeEventWS(BaseResponseWS):
@@ -36,7 +50,10 @@ class LightningStrikeEventWS(BaseResponseWS):
 @dataclass
 class RapidWindWS(BaseResponseWS):
     device_id: int
-    ob: List[int]
+    ob: EventDataRapidWind | List
+
+    def __post_init__(self):
+        self.ob = EventDataRapidWind(self.ob[0], self.ob[1], self.ob[2])
 
 
 @dataclass_json
@@ -44,6 +61,10 @@ class RapidWindWS(BaseResponseWS):
 class ObservationAirWS(BaseResponseWS, WebsocketObservation):
     device_id: int
     summary: Summary
+    source: str
+    serial_number: str
+    hub_sn: str
+    firmware_revision: str
 
 
 @dataclass_json
@@ -51,6 +72,10 @@ class ObservationAirWS(BaseResponseWS, WebsocketObservation):
 class ObservationSkyWS(BaseResponseWS, WebsocketObservation):
     device_id: int
     summary: Summary
+    source: str
+    serial_number: str
+    hub_sn: str
+    firmware_revision: str
 
 
 @dataclass_json
@@ -58,6 +83,10 @@ class ObservationSkyWS(BaseResponseWS, WebsocketObservation):
 class ObservationTempestWS(BaseResponseWS, WebsocketObservation):
     device_id: int
     summary: Summary
+    source: str
+    serial_number: str
+    hub_sn: str
+    firmware_revision: str
 
 
 @dataclass_json
