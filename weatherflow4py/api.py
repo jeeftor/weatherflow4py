@@ -130,15 +130,15 @@ class WeatherFlowRestAPI:
             ClientResponseError: If there is a client response error during data retrieval.
         """
         ret: dict[int, WeatherFlowData] = {}
-        stations = await self.async_get_stations()
-        for station in stations:
+        station_response = await self.async_get_stations()
+        for station in station_response.stations:
             device_id = station.outdoor_devices[0].device_id
 
             ret[station.station_id] = WeatherFlowData(
                 weather=await self.async_get_forecast(station_id=station.station_id),
                 observation=await self.async_get_observation(
                     station_id=station.station_id
-                ),  # noqa: E501
+                ),
                 station=station,
                 device_observations=await self.async_get_device_observations(
                     device_id=device_id
