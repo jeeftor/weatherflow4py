@@ -1,7 +1,7 @@
 import aiohttp
 
 from weatherflow4py.exceptions import TokenError
-from weatherflow4py.models.device import DeviceObservationTempest
+from weatherflow4py.models.device import DeviceObservationTempestREST
 from weatherflow4py.models.forecast import WeatherData
 from weatherflow4py.models.observation import StationObservation
 from weatherflow4py.models.station import StationsResponse
@@ -91,7 +91,7 @@ class WeatherFlowRestAPI:
 
     async def async_get_device_observations(
         self, device_id: int
-    ) -> DeviceObservationTempest:
+    ) -> DeviceObservationTempestREST:
         """
         Gets the device observation data for a given device.
 
@@ -103,7 +103,7 @@ class WeatherFlowRestAPI:
         """
         return await self._make_request(
             f"observations/device/{device_id}",
-            response_model=DeviceObservationTempest,
+            response_model=DeviceObservationTempestREST,
         )
 
     async def async_get_observation(self, station_id: int) -> StationObservation:

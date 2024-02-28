@@ -1,10 +1,11 @@
+import json
+
 import pytest
 
+from weatherflow4py.models.custom_types import PrecipitationType
 from weatherflow4py.models.device import (
-    DeviceObservationTempest,
-    DeviceObservationType,
-    ObservationPrecipitationAnalysisType,
-    ObservationPrecipitationType,
+    DeviceObservationTempestREST,
+    PrecipitationAnalysisType,
 )
 from weatherflow4py.models.forecast import (
     WeatherData,
@@ -12,6 +13,7 @@ from weatherflow4py.models.forecast import (
     CurrentConditions,
     ForecastUnits,
 )
+from weatherflow4py.models.obs import WebsocketObservation, ObservationType
 from weatherflow4py.models.observation import StationObservation
 
 
@@ -128,12 +130,18 @@ def test_convert_weather_data_ha_forecast(forecast_json):
 
 
 def test_obs_st(obs_st_json):
+    obs_json = DeviceObservationTempestREST.from_json(json.dumps(obs_st_json))
+    obs_dict = DeviceObservationTempestREST.from_dict(obs_st_json)
+
+    assert obs_dict == obs_json
+
     try:
-        obs_st = DeviceObservationTempest.from_dict(obs_st_json)
+        obs_st = DeviceObservationTempestREST.from_dict(obs_st_json)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
 
-    assert isinstance(obs_st, DeviceObservationTempest)
+    assert isinstance(obs_st, DeviceObservationTempestREST)
+
     assert obs_st.epoch == 1709057252
     assert obs_st.wind_lull == 0.77
     assert obs_st.wind_avg == 2.07
@@ -146,7 +154,7 @@ def test_obs_st(obs_st_json):
     assert obs_st.status.status_code == obs_st_json["status"]["status_code"]
     assert obs_st.status.status_message == obs_st_json["status"]["status_message"]
     assert obs_st.device_id == obs_st_json["device_id"]
-    assert obs_st.type == DeviceObservationType.STATION
+    assert obs_st.type == ObservationType.OBS_ST
     assert obs_st.source == obs_st_json["source"]
     assert obs_st.summary.pressure_trend == obs_st_json["summary"]["pressure_trend"]
     assert obs_st.summary.strike_count_1h == obs_st_json["summary"]["strike_count_1h"]
@@ -165,8 +173,7 @@ def test_obs_st(obs_st_json):
         == obs_st_json["summary"]["precip_accum_local_yesterday_final"]
     )
     assert (
-        obs_st.summary.precip_analysis_type_yesterday
-        == ObservationPrecipitationAnalysisType.NONE
+        obs_st.summary.precip_analysis_type_yesterday == PrecipitationAnalysisType.NONE
     )
     assert obs_st.summary.feels_like == obs_st_json["summary"]["feels_like"]
     assert obs_st.summary.heat_index == obs_st_json["summary"]["heat_index"]
@@ -184,7 +191,7 @@ def test_obs_st(obs_st_json):
     assert obs_st.uv == obs_st_json["obs"][0][10]
     assert obs_st.solar_radiation == obs_st_json["obs"][0][11]
     assert obs_st.rain_accumulation == obs_st_json["obs"][0][12]
-    assert obs_st.precipitation_type == ObservationPrecipitationType.NONE
+    assert obs_st.precipitation_type == PrecipitationType.NONE
     assert obs_st.average_strike_distance == obs_st_json["obs"][0][14]
     assert obs_st.strike_count == obs_st_json["obs"][0][15]
     assert obs_st.battery == obs_st_json["obs"][0][16]
@@ -192,6 +199,18 @@ def test_obs_st(obs_st_json):
     assert obs_st.local_day_rain_accumulation == obs_st_json["obs"][0][18]
     assert obs_st.nc_rain_accumulation == obs_st_json["obs"][0][19]
     assert obs_st.local_day_nc_rain_accumulation == obs_st_json["obs"][0][20]
-    assert (
-        obs_st.precipitation_analysis_type == ObservationPrecipitationAnalysisType.NONE
-    )
+    assert obs_st.precipitation_analysis_type == PrecipitationAnalysisType.NONE
+
+
+def test_websocket_air(ws_obs_st, ws_obs_air, ws_obs_sky, ws_obs_st_3x):
+    obs_air = WebsocketObservation.from_json(ws_obs_air)
+    obs_st = WebsocketObservation.from_json(ws_obs_st)
+    obs_st_3x = WebsocketObservation.from_json(ws_obs_st_3x)
+
+    obs_sky = WebsocketObservation.from_json(ws_obs_sky)
+
+    assert obs_air.type == ObservationType.OBS_AIR
+    assert obs_st.type == ObservationType.OBS_ST
+    assert obs_sky.type == ObservationType.OBS_SKY
+
+    print(obs_st_3x.first)

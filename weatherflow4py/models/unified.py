@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from weatherflow4py.models.device import DeviceObservationTempest
+from weatherflow4py.models.device import DeviceObservationTempestREST
 from weatherflow4py.models.forecast import WeatherData
 from weatherflow4py.models.observation import StationObservation
 from weatherflow4py.models.station import Station
@@ -13,4 +13,4 @@ class WeatherFlowData:
     weather: WeatherData
     station: Station
     observation: StationObservation
-    device_observations: DeviceObservationTempest | None
+    device_observations: DeviceObservationTempestREST | None
