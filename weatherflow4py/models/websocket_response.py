@@ -42,6 +42,15 @@ class EventDataRapidWind:
 @dataclass_json
 @dataclass
 class LightningStrikeEventWS(BaseResponseWS):
+    """
+    Field   Type	    Description
+    0	    timestamp	Epoch (seconds, UTC)
+    1	    distance	(km)
+    2	    energy
+
+
+    """
+
     device_id: int
     evt: List[int]
 

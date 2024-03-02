@@ -2,9 +2,9 @@ import aiohttp
 
 from weatherflow4py.exceptions import TokenError
 from weatherflow4py.models.device import DeviceObservationTempestREST
-from weatherflow4py.models.forecast import WeatherData
+from weatherflow4py.models.rest_betterforecast import WeatherData
 from weatherflow4py.models.observation import StationObservation
-from weatherflow4py.models.station import StationsResponse
+from weatherflow4py.models.rest_station import StationsResponse
 from weatherflow4py.models.unified import WeatherFlowData
 
 

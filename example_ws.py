@@ -9,41 +9,8 @@ from dotenv import load_dotenv
 from weatherflow4py.ws import WebsocketAPI
 
 
-#
-#
-# async def listen_to_tempest(device_id, access_token):
-#     uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"
-#
-#     async with websockets.connect(uri) as websocket:
-#         # Start listening
-#         listen_start = {
-#             "type": "listen_start",
-#             "device_id": device_id,
-#             "id": "unique_id_here",  # Generate a unique ID for your request
-#         }
-#         await websocket.send(json.dumps(listen_start))
-#
-#         # Handle incoming messages
-#         async for message in websocket:
-#             data = json.loads(message)
-#
-#             try:
-#                 response = WebsocketResponseBuilder.build_response(data)
-#                 print(response)
-#             except ValueError:
-#                 print(f"INVALID:\n {message}")
-#                 continue
-#             # Example stop condition: stop after receiving a certain message
-#             # if some_condition:
-#             #     break
-#
-#         # Stop listening (optional, depending on your application logic)
-#         listen_stop = {
-#             "type": "listen_stop",
-#             "device_id": device_id,
-#             "id": "unique_id_here",  # The same or another unique ID
-#         }
-#         await websocket.send(json.dumps(listen_stop))
+def invalid_data_cb(data):
+    print("Invalid data received:", data)
 
 
 async def main():
@@ -58,6 +25,8 @@ async def main():
     # Sleep for 2 minutes
 
     api = WebsocketAPI(device, token)
+
+    api.register_callback(api.EventType.INVALID, invalid_data_cb)
     await api.connect()
 
     await api.send_message(api.MessageType.LISTEN_START)
@@ -66,20 +35,21 @@ async def main():
     await asyncio.sleep(1)
     print("Request winds")
 
-    await asyncio.sleep(120)
-
-    if api.is_connected():
-        print("WebSocket is connected.")
-
-    if api.is_listening:
-        print("WebSocket is listening for messages.")
-
-    await asyncio.sleep(120)
-    if api.is_connected():
-        print("WebSocket is connected.")
-
-    if api.is_listening:
-        print("WebSocket is listening for messages.")
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    await api.send_message(api.MessageType.LISTEN_STOP)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
+    await asyncio.sleep(30)
+    print("DATA::", api.messages)
 
     await asyncio.sleep(120)
 

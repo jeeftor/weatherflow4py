@@ -3,7 +3,7 @@ from aioresponses import aioresponses  # Make sure to import aioresponses
 
 from weatherflow4py.api import WeatherFlowRestAPI
 from weatherflow4py.exceptions import TokenError
-from weatherflow4py.models.forecast import WeatherData
+from weatherflow4py.models.rest_betterforecast import WeatherData
 from aiohttp import ClientResponseError
 
 

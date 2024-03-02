@@ -7,7 +7,7 @@ from weatherflow4py.models.device import (
     DeviceObservationTempestREST,
     PrecipitationAnalysisType,
 )
-from weatherflow4py.models.forecast import (
+from weatherflow4py.models.rest_betterforecast import (
     WeatherData,
     Forecast,
     CurrentConditions,

@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 from weatherflow4py.models.device import DeviceObservationTempestREST
-from weatherflow4py.models.forecast import WeatherData
+from weatherflow4py.models.rest_betterforecast import WeatherData
 from weatherflow4py.models.observation import StationObservation
-from weatherflow4py.models.station import Station
+from weatherflow4py.models.rest_station import Station
 
 
 @dataclass
