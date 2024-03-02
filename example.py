@@ -14,8 +14,8 @@ async def main():
         print(data)
 
     async with WeatherFlowRestAPI(token) as api:
-        stations = await api.async_get_stations()
-        for station in stations:
+        station_response = await api.async_get_stations()
+        for station in station_response.stations:
             print(station.name)
             print(station.station_id)
             print(station.public_name)
