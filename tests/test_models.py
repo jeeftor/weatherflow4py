@@ -2,19 +2,19 @@ import json
 
 import pytest
 
-from weatherflow4py.models.custom_types import PrecipitationType
-from weatherflow4py.models.device import (
+from weatherflow4py.models.ws.custom_types import PrecipitationType
+from weatherflow4py.models.rest.device import (
     DeviceObservationTempestREST,
     PrecipitationAnalysisType,
 )
-from weatherflow4py.models.rest_betterforecast import (
+from weatherflow4py.models.rest.forecast import (
     WeatherData,
     Forecast,
     CurrentConditions,
     ForecastUnits,
 )
-from weatherflow4py.models.obs import ObservationType
-from weatherflow4py.models.observation import StationObservation
+from weatherflow4py.models.ws.obs import ObservationType
+from weatherflow4py.models.rest.observation import StationObservation
 
 
 def test_convert_json_to_observation(observation_json):

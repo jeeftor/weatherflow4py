@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List, Union, Any, Type
 
-from weatherflow4py.models.custom_types import (
+from weatherflow4py.models.ws.custom_types import (
     PrecipitationAnalysisType,
     ObservationType,
     PrecipitationType,
@@ -247,3 +247,30 @@ class WebsocketObservation:
     @property
     def precipitation_analysis_type(self) -> PrecipitationAnalysisType:
         return self.first.precipitation_analysis_type
+
+
+# def construct_obs_st(sky: obs_sky, air: obs_air) -> obs_st:
+#     return obs_st(
+#         epoch=sky.epoch,  # Assuming the epochs are the same
+#         wind_lull=sky.wind_lull,
+#         wind_avg=sky.wind_avg,
+#         wind_gust=sky.wind_gust,
+#         wind_direction=sky.wind_direction,
+#         wind_sample_interval=sky.wind_sample_interval,
+#         pressure=air.station_pressure,
+#         air_temperature=air.air_temperature,
+#         relative_humidity=air.relative_humidity,
+#         illuminance=sky.illuminance,
+#         uv=sky.uv,
+#         solar_radiation=sky.solar_radiation,
+#         rain_accumulation=sky.rain_accumulation,
+#         precipitation_type=sky.precipitation_type,
+#         average_strike_distance=air.lightning_strike_average_distance,
+#         strike_count=air.lightning_strike_count,
+#         battery=sky.battery,  # Assuming the battery levels are the same
+#         report_interval=sky.report_interval,
+#         local_day_rain_accumulation=sky.local_day_rain_accumulation,
+#         nc_rain_accumulation=sky.nc_rain,  # Assuming nc_rain is the same as nc_rain_accumulation
+#         local_day_nc_rain_accumulation=sky.local_day_nc_rain_accumulation,
+#         precipitation_analysis_type=sky.precipitation_analysis_type
+#     )

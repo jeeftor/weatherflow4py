@@ -1,12 +1,18 @@
+import logging
 import time
 from collections.abc import Callable
-from enum import Enum
 
 import asyncio
 import websockets
 import json
 
-from weatherflow4py.models.websocket_response import (
+from weatherflow4py.models.ws.types import EventType
+from weatherflow4py.models.ws.websocket_request import (
+    WebsocketRequest,
+    ListenStopMessage,
+    RapidWindListenStopMessage,
+)
+from weatherflow4py.models.ws.websocket_response import (
     WebsocketResponseBuilder,
     ObservationTempestWS,
     RapidWindWS,
@@ -14,21 +20,6 @@ from weatherflow4py.models.websocket_response import (
 
 
 class WebsocketAPI:
-    class MessageType(Enum):
-        LISTEN_START = "listen_start"
-        LISTEN_STOP = "listen_stop"
-        RAPID_WIND_START = "listen_rapid_start"
-        RAPID_WIND_STOP = "listen_rapid_stop"
-
-    class EventType(Enum):
-        ACKNOWLEDGEMENT = "ack"
-        RAPID_WIND = "rapid_wind"
-        OBSERVATION = "obs_st"
-        LIGHTNING_STRIKE = "evt_strike"
-        RAIN = "evt_precip"
-        DEVICE_STATUS = "device_status"
-        INVALID = "unknown"
-
     def __init__(self, device_id: str, access_token: str):
         self.device_id = device_id
         self.uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"
@@ -37,6 +28,9 @@ class WebsocketAPI:
         self.is_listening = False
         self.listen_task = None  # To keep track of the listening task
         self.callbacks = {}
+
+        self.logger = logging.getLogger(__name__)
+        self.logger.debug("WebsocketAPI initialized with URI: " + self.uri)
 
     def register_callback(
         self, message_type: EventType, callback: Callable[[str], None]
@@ -60,7 +54,7 @@ class WebsocketAPI:
         Args:
             callback (Callable[[RapidWindWS], None]): The callback function to register.
         """
-        self.callbacks[self.EventType.RAPID_WIND.value] = callback
+        self.callbacks[EventType.RAPID_WIND.value] = callback
 
     # def register_precipitation_callback(self, callback: Callable[[str], None]):
     #     self.callbacks[self.EventType.RAIN.value] = callback
@@ -85,12 +79,9 @@ class WebsocketAPI:
             return time_difference
         return None
 
-    async def send_message(self, message_type: MessageType):
-        message = {
-            "type": message_type.value,
-            "device_id": self.device_id,
-            "id": "unique_id_here",
-        }
+    async def send_message(self, message_type: WebsocketRequest):
+        message = message_type.json
+        self.logger.debug(f"Sending message: {message}")
         await self._send(message)
 
     async def connect(self):
@@ -104,30 +95,36 @@ class WebsocketAPI:
         self.is_listening = True
         try:
             async for message in self.websocket:
+                self.logger.info(f"Received message: {message}")
                 data = json.loads(message)
-
                 try:
                     response = WebsocketResponseBuilder.build_response(data)
                     self.messages[data["type"]] = response
 
                     if data["type"] in self.callbacks:
                         if asyncio.iscoroutinefunction(self.callbacks[data["type"]]):
+                            self.logger.debug(
+                                f"Calling ASYNC callback for message type: {data['type']}"
+                            )
                             # If it is, use 'await' to call it
                             await self.callbacks[data["type"]](response)
                         else:
+                            self.logger.debug(
+                                f"Calling SYNC callback for message type: {data['type']}"
+                            )
                             # If it's not, call it normally
                             self.callbacks[data["type"]](response)
 
                 except ValueError:
-                    if self.EventType.INVALID.value in self.callbacks:
+                    if EventType.INVALID.value in self.callbacks:
                         if asyncio.iscoroutinefunction(
-                            self.callbacks[self.EventType.INVALID.value]
+                            self.callbacks[EventType.INVALID.value]
                         ):
                             # If it is, use 'await' to call it
-                            await self.callbacks[self.EventType.INVALID.value](data)
+                            await self.callbacks[EventType.INVALID.value](data)
                         else:
                             # If it's not, call it normally
-                            self.callbacks[self.EventType.INVALID.value](data)
+                            self.callbacks[EventType.INVALID.value](data)
                     else:
                         print(f"INVALID:\n {message}")
 
@@ -138,15 +135,15 @@ class WebsocketAPI:
 
     async def _send(self, message):
         if self.websocket:
-            await self.websocket.send(json.dumps(message))
+            await self.websocket.send(message)
 
     def is_connected(self):
         # Check if the websocket connection is open
         return self.websocket and not self.websocket.closed
 
     async def close(self):
-        await self.send_message(self.MessageType.LISTEN_STOP)
-        await self.send_message(self.MessageType.RAPID_WIND_STOP)
+        await self.send_message(ListenStopMessage(device_id=self.device_id))
+        await self.send_message(RapidWindListenStopMessage(device_id=self.device_id))
 
         if self.websocket:
             await self.websocket.close()

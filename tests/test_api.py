@@ -3,7 +3,7 @@ from aioresponses import aioresponses  # Make sure to import aioresponses
 
 from weatherflow4py.api import WeatherFlowRestAPI
 from weatherflow4py.exceptions import TokenError
-from weatherflow4py.models.rest_betterforecast import WeatherData
+from weatherflow4py.models.rest.forecast import WeatherData
 from aiohttp import ClientResponseError
 
 
@@ -20,8 +20,8 @@ async def test_api_calls(forecast_json, station_json, stations_json):
         )
 
         async with WeatherFlowRestAPI("mock_token") as api:
-            stations = await api.async_get_stations()
-            for station in stations:
+            station_respose = await api.async_get_stations()
+            for station in station_respose.stations:
                 assert station.name == "My Home Station"
                 assert station.station_id == 24432
 

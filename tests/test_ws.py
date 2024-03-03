@@ -1,6 +1,10 @@
 import pytest
 
-from weatherflow4py.models.websocket_response import (
+from weatherflow4py.models.ws.websocket_request import (
+    GeoStrikeListenStartMessage,
+    LightingStrikeType,
+)
+from weatherflow4py.models.ws.websocket_response import (
     WebsocketResponseBuilder,
     AcknowledgementWS,
     ConnectionOpenWS,
@@ -39,3 +43,35 @@ def test_winds(websocket_winds):
         wind = WebsocketResponseBuilder.build_response(msg)
         assert isinstance(wind, RapidWindWS)
         assert isinstance(wind.ob, EventDataRapidWind)
+
+
+@pytest.mark.parametrize(
+    "strike_type, expected",
+    [
+        (LightingStrikeType.ALL, "all"),
+        (LightingStrikeType.CLOUD_TO_GROUND, "cg"),
+        (LightingStrikeType.CLOUD_TO_CLOUD, "ic"),
+        (None, None),
+    ],
+)
+def test_geo_strike_listen_start_message_to_dict_with_different_strike_types(
+    strike_type, expected
+):
+    message = GeoStrikeListenStartMessage(
+        lat_min=37.28,
+        lat_max=41.32,
+        lon_min=-101.76,
+        lon_max=-91.00,
+        strike_type=strike_type,
+    )
+    message_dict = message.to_dict()
+    assert message_dict["type"] == "geo_strike_listen_start"
+    assert message_dict["lat_min"] == 37.28
+    assert message_dict["lat_max"] == 41.32
+    assert message_dict["lon_min"] == -101.76
+    assert message_dict["lon_max"] == -91.00
+    assert "id" in message_dict
+    if expected is not None:
+        assert message_dict["strike_type"] == expected
+    else:
+        assert "strike_type" not in message_dict

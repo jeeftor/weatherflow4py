@@ -3,11 +3,11 @@ from typing import List, Union
 
 from dataclasses_json import dataclass_json
 
-from weatherflow4py.models.custom_types import (
+from weatherflow4py.models.ws.custom_types import (
     PrecipitationAnalysisType,
     ObservationType,
 )
-from weatherflow4py.models.obs import (
+from weatherflow4py.models.ws.obs import (
     obs_st,
     WebsocketObservation,
     obs_sky,

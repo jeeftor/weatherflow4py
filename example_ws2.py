@@ -3,7 +3,7 @@ import os
 
 import websockets
 import json
-from weatherflow4py.models.websocket_response import WebsocketResponseBuilder
+from weatherflow4py.models.ws.websocket_response import WebsocketResponseBuilder
 from dotenv import load_dotenv
 
 

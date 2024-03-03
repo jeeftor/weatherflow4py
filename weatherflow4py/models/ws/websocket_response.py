@@ -1,10 +1,16 @@
+"""Websocket Responses.
+
+Documentation form:
+ - https://apidocs.tempestwx.com/reference/websocket-reference#lightning-strike-event
+ - https://weatherflow.github.io/Tempest/api/ws.html
+"""
 from dataclasses import dataclass
 from typing import List
 
 from dataclasses_json import dataclass_json
 
-from weatherflow4py.models.device import Summary
-from weatherflow4py.models.obs import WebsocketObservation
+from weatherflow4py.models.rest.device import Summary
+from weatherflow4py.models.ws.obs import WebsocketObservation
 
 
 @dataclass_json
@@ -41,18 +47,19 @@ class EventDataRapidWind:
 
 @dataclass_json
 @dataclass
-class LightningStrikeEventWS(BaseResponseWS):
+class LightningStrikeEventWS(BaseResponseWS, EventDataLightningStrike):
     """
     Field   Type	    Description
     0	    timestamp	Epoch (seconds, UTC)
     1	    distance	(km)
     2	    energy
-
-
     """
 
     device_id: int
-    evt: List[int]
+    evt: EventDataLightningStrike | List
+
+    def __post_init__(self):
+        self.evt = EventDataLightningStrike(self.evt[0], self.evt[1], self.evt[2])
 
 
 @dataclass_json

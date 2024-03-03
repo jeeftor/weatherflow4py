@@ -1,15 +1,17 @@
 import aiohttp
 
 from weatherflow4py.exceptions import TokenError
-from weatherflow4py.models.device import DeviceObservationTempestREST
-from weatherflow4py.models.rest_betterforecast import WeatherData
-from weatherflow4py.models.observation import StationObservation
-from weatherflow4py.models.rest_station import StationsResponse
-from weatherflow4py.models.unified import WeatherFlowData
+from weatherflow4py.models.rest.device import DeviceObservationTempestREST
+from weatherflow4py.models.rest.forecast import WeatherData
+from weatherflow4py.models.rest.observation import StationObservation
+from weatherflow4py.models.rest.station import StationsResponse
+from weatherflow4py.models.rest.unified import WeatherFlowData
 
 
 class WeatherFlowRestAPI:
-    """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per minute. There is some burst capacity built into the system, but the general rule of thumb it to keep the number of REST requests per user to under 100 per minute."""
+    """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per
+    minute. There is some burst capacity built into the system, but the general rule of thumb it to keep the number
+    of REST requests per user to under 100 per minute."""
 
     BASE_URL = "https://swd.weatherflow.com/swd/rest"
 
@@ -53,9 +55,7 @@ class WeatherFlowRestAPI:
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        return (
-            await self._make_request("stations", response_model=StationsResponse)
-        ).stations
+        return await self._make_request("stations", response_model=StationsResponse)
 
     async def async_get_station(self, station_id: int) -> StationsResponse:
         """
@@ -122,9 +122,19 @@ class WeatherFlowRestAPI:
             response_model=StationObservation,
         )
 
-    async def get_all_data(self) -> dict[int, WeatherFlowData]:
+    async def get_all_data(
+        self, get_device_observations: bool = False
+    ) -> dict[int, WeatherFlowData]:
         """
-        Builds a full data set of stations and forecasts.
+        Builds a full data set of stations and forecasts. If get_device_observations is True,
+        it also fetches device observations for each station. Otherwise, device_observations
+        will be set to None for each station.
+
+        Args:
+            get_device_observations (bool): Whether to fetch device observations for each station.
+
+        Returns:
+            dict[int, WeatherFlowData]: A dictionary mapping station IDs to their corresponding data.
 
         Raises:
             ClientResponseError: If there is a client response error during data retrieval.
@@ -134,15 +144,19 @@ class WeatherFlowRestAPI:
         for station in station_response.stations:
             device_id = station.outdoor_devices[0].device_id
 
+            device_observations = None
+            if get_device_observations:
+                device_observations = await self.async_get_device_observations(
+                    device_id=device_id
+                )
+
             ret[station.station_id] = WeatherFlowData(
                 weather=await self.async_get_forecast(station_id=station.station_id),
                 observation=await self.async_get_observation(
                     station_id=station.station_id
                 ),
                 station=station,
-                device_observations=await self.async_get_device_observations(
-                    device_id=device_id
-                ),
+                device_observations=device_observations,
             )
 
         return ret

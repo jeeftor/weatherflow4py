@@ -1,12 +1,18 @@
 import asyncio
 import os
 
-# from weatherflow4py.models.websocket_request import ResponseBuilder, Acknowledgement, RainStartEvent, LightningStrikeEvent, RapidWind, \
-#     ObservationAir, ObservationSky, ObservationTempest
-
 from dotenv import load_dotenv
 
+from weatherflow4py.models.ws.types import EventType
+from weatherflow4py.models.ws.websocket_request import (
+    ListenStartMessage,
+    RapidWindListenStartMessage,
+)
 from weatherflow4py.ws import WebsocketAPI
+
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 def invalid_data_cb(data):
@@ -26,21 +32,26 @@ async def main():
 
     api = WebsocketAPI(device, token)
 
-    api.register_callback(api.EventType.INVALID, invalid_data_cb)
+    api.register_callback(EventType.INVALID, invalid_data_cb)
     await api.connect()
 
-    await api.send_message(api.MessageType.LISTEN_START)
-    await api.send_message(api.MessageType.RAPID_WIND_START)
+    await api.send_message(ListenStartMessage(device_id=device))
+    await api.send_message(RapidWindListenStartMessage(device_id=device))
 
     await asyncio.sleep(1)
-    print("Request winds")
+
+    print(api.listen_task)
 
     await asyncio.sleep(30)
     print("DATA::", api.messages)
+    print(api.listen_task)
+
     await asyncio.sleep(30)
     print("DATA::", api.messages)
+    print(api.listen_task)
+
     await asyncio.sleep(30)
-    await api.send_message(api.MessageType.LISTEN_STOP)
+
     print("DATA::", api.messages)
     await asyncio.sleep(30)
     print("DATA::", api.messages)
