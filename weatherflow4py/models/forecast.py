@@ -126,7 +126,7 @@ class VisibilityUnit(Enum):
     MILES = "mi"
 
 
-@dataclass_json
+@dataclass_json()
 @dataclass(frozen=True, eq=True)
 class CurrentConditions:
     air_density: float
@@ -138,7 +138,6 @@ class CurrentConditions:
     feels_like: float
     icon: Icon  # Added missing field
     is_precip_local_day_rain_check: bool
-    is_precip_local_yesterday_rain_check: bool
     lightning_strike_count_last_1hr: int
     lightning_strike_count_last_3hr: int
     lightning_strike_last_distance: int
@@ -161,6 +160,7 @@ class CurrentConditions:
     wind_direction: float
     wind_direction_cardinal: WindDirection
     wind_gust: float
+    is_precip_local_yesterday_rain_check: bool | None = None
 
 
 @dataclass_json
