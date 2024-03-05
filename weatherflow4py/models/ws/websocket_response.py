@@ -10,6 +10,7 @@ from typing import List
 from dataclasses_json import dataclass_json
 
 from weatherflow4py.models.rest.device import Summary
+from weatherflow4py.models.rest.forecast import WindDirection
 from weatherflow4py.models.ws.obs import WebsocketObservation
 
 
@@ -43,6 +44,32 @@ class EventDataRapidWind:
     epoch: int
     wind_speed_meters_per_second: int
     wind_direction_degrees: int
+    wind_direction_cardinal: WindDirection | None = None
+
+    def __post_init__(self):
+        self.wind_direction_cardinal = self._wind_cardinal_direction()
+
+    def _wind_cardinal_direction(self):
+        dirs = [
+            WindDirection.N,
+            WindDirection.NNE,
+            WindDirection.NE,
+            WindDirection.ENE,
+            WindDirection.E,
+            WindDirection.ESE,
+            WindDirection.SE,
+            WindDirection.SSE,
+            WindDirection.S,
+            WindDirection.SSW,
+            WindDirection.SW,
+            WindDirection.WSW,
+            WindDirection.W,
+            WindDirection.WNW,
+            WindDirection.NW,
+            WindDirection.NNW,
+        ]
+        ix = round(self.wind_direction_degrees / (360.0 / len(dirs)))
+        return dirs[ix % len(dirs)]
 
 
 @dataclass_json
@@ -65,6 +92,15 @@ class LightningStrikeEventWS(BaseResponseWS, EventDataLightningStrike):
 @dataclass_json
 @dataclass
 class RapidWindWS(BaseResponseWS):
+    """
+    Rapid Wind stuff.
+
+        Index	Field	        Units
+        0	    Time Epoch	    Seconds
+        1	    Wind Speed	    m/s
+        2	    Wind Direction	Degrees
+    """
+
     device_id: int
     ob: EventDataRapidWind | List
 

@@ -12,11 +12,15 @@ from weatherflow4py.ws import WebsocketAPI
 
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 
 def invalid_data_cb(data):
-    print("Invalid data received:", data)
+    print("Invalid data ❗️ received:", data)
+
+
+def wind_cb(data):
+    print("Wind 🍃 data received:", data)
 
 
 async def main():
@@ -24,46 +28,38 @@ async def main():
 
     token = os.getenv("TOKEN")
     device = os.getenv("DEVICE")
-    # Replace 'your_device_id' and 'your_access_token' with your actual Device ID and Access Token
-    # asyncio.run(listen_to_tempest(device, token))
-    # Send a message
-
-    # Sleep for 2 minutes
 
     api = WebsocketAPI(device, token)
+    api._register_callback(EventType.INVALID, invalid_data_cb)
+    api.register_wind_callback(wind_cb)
 
-    api.register_callback(EventType.INVALID, invalid_data_cb)
     await api.connect()
-
     await api.send_message(ListenStartMessage(device_id=device))
     await api.send_message(RapidWindListenStartMessage(device_id=device))
 
-    await asyncio.sleep(1)
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    # print(api.listen_task)
+    #
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    # print(api.listen_task)
+    #
+    # await asyncio.sleep(30)
+    #
+    # print("DATA::", api.messages)
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    # await asyncio.sleep(30)
+    # print("DATA::", api.messages)
+    #
+    # await asyncio.sleep(120)
 
-    print(api.listen_task)
-
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-    print(api.listen_task)
-
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-    print(api.listen_task)
-
-    await asyncio.sleep(30)
-
-    print("DATA::", api.messages)
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-    await asyncio.sleep(30)
-    print("DATA::", api.messages)
-
-    await asyncio.sleep(120)
-
+    await asyncio.sleep(30000)
     await api.close()
 
 

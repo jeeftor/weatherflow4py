@@ -1,3 +1,4 @@
+"""Base message types for websockets."""
 from dataclasses import dataclass
 from typing import List, Union, Any, Type
 

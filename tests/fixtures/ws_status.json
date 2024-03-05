@@ -1,0 +1,34 @@
+{
+  "status": {
+    "status_code": 0,
+    "status_message": "SUCCESS"
+  },
+  "device_id": 211522,
+  "type": "obs_st",
+  "source": "cache",
+  "summary": {
+    "pressure_trend": "steady",
+    "strike_count_1h": 0,
+    "strike_count_3h": 0,
+    "precip_total_1h": 0.0,
+    "strike_last_dist": 26,
+    "strike_last_epoch": 1707346875,
+    "precip_accum_local_yesterday": 0.0,
+    "precip_accum_local_yesterday_final": 0.0,
+    "precip_analysis_type_yesterday": 0,
+    "feels_like": -1.9,
+    "heat_index": 0.1,
+    "wind_chill": -1.9,
+    "raining_minutes": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+    "dew_point": -9.1,
+    "wet_bulb_temperature": -3.2,
+    "wet_bulb_globe_temperature": -0.4,
+    "air_density": 1.0092,
+    "delta_t": 3.3,
+    "precip_minutes_local_day": 0,
+    "precip_minutes_local_yesterday": 0
+  },
+  "obs": [
+    [1709655648, 0.22, 1.73, 3.01, 209, 3, 791.6, 0.1, 50, 72066, 2.7, 601, 0, 0, 0, 0, 2.8, 1, 0, 0, 0, 0]
+  ]
+}

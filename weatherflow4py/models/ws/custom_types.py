@@ -1,3 +1,4 @@
+"""Custom websocket types."""
 from enum import Enum
 
 

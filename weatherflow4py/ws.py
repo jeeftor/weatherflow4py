@@ -32,7 +32,7 @@ class WebsocketAPI:
         self.logger = logging.getLogger(__name__)
         self.logger.debug("WebsocketAPI initialized with URI: " + self.uri)
 
-    def register_callback(
+    def _register_callback(
         self, message_type: EventType, callback: Callable[[str], None]
     ):
         """Register a callback for a specific message type"""
@@ -56,11 +56,61 @@ class WebsocketAPI:
         """
         self.callbacks[EventType.RAPID_WIND.value] = callback
 
-    # def register_precipitation_callback(self, callback: Callable[[str], None]):
-    #     self.callbacks[self.EventType.RAIN.value] = callback
-    #
-    # def register_lightning_callback(self, callback: Callable[[str], None]):
-    #     self.callbacks[self.EventType.LIGHTNING_STRIKE.value] = callback
+    def register_precipitation_callback(self, callback: Callable[[str], None]):
+        """
+        Register a callback for the 'rain' event.
+
+        The callback should be a function that takes a single argument of type str.
+
+        Example:
+            def rain_callback(data: str):
+                print("Received rain data:", data)
+
+            api = WebsocketAPI(device_id, access_token)
+            api.register_precipitation_callback(rain_callback)
+
+        Args:
+            callback (Callable[[str], None]): The callback function to register.
+        """
+        self.callbacks[EventType.RAIN.value] = callback
+
+    def register_lightning_callback(self, callback: Callable[[str], None]):
+        """
+        Register a callback for the 'lightning_strike' event.
+
+        The callback should be a function that takes a single argument of type str.
+
+        Example:
+            def lightning_callback(data: str):
+                print("Received lightning data:", data)
+
+            api = WebsocketAPI(device_id, access_token)
+            api.register_lightning_callback(lightning_callback)
+
+        Args:
+            callback (Callable[[str], None]): The callback function to register.
+        """
+        self.callbacks[EventType.LIGHTNING_STRIKE.value] = callback
+
+    def register_observation_callback(
+        self, callback: Callable[[ObservationTempestWS], None]
+    ):
+        """
+        Register a callback for the 'obs_st' event.
+
+        The callback should be a function that takes a single argument of type ObservationTempestWS.
+
+        Example:
+            def observation_callback(data: ObservationTempestWS):
+                print("Received observation data:", data)
+
+            api = WebsocketAPI(device_id, access_token)
+            api.register_observation_callback(observation_callback)
+
+        Args:
+            callback (Callable[[ObservationTempestWS], None]): The callback function to register.
+        """
+        self.callbacks[EventType.OBSERVATION.value] = callback
 
     @property
     def last_observation(self) -> ObservationTempestWS | None:
@@ -95,7 +145,7 @@ class WebsocketAPI:
         self.is_listening = True
         try:
             async for message in self.websocket:
-                self.logger.info(f"Received message: {message}")
+                self.logger.debug(f"Received message: {message}")
                 data = json.loads(message)
                 try:
                     response = WebsocketResponseBuilder.build_response(data)
