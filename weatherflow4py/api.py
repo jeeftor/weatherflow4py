@@ -55,7 +55,8 @@ class WeatherFlowRestAPI:
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        return await self._make_request("stations", response_model=StationsResponse)
+        ret = await self._make_request("stations", response_model=StationsResponse)
+        return ret
 
     async def async_get_station(self, station_id: int) -> StationsResponse:
         """

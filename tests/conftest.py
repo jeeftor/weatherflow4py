@@ -74,6 +74,14 @@ def forecast_json() -> dict:
 
 
 @pytest.fixture
+def forecast2_json() -> dict:
+    """Load the forecast.json fixture file."""
+    with open("fixtures/forecast2.json", "r") as json_file:
+        data = json.load(json_file)
+    return data
+
+
+@pytest.fixture
 def observation_json() -> dict:
     with open(os.path.join(dir_path, "fixtures/observation.json"), "r") as json_file:
         data = json.load(json_file)
