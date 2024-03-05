@@ -8,6 +8,10 @@ from weatherflow4py.models.ws.websocket_request import (
     ListenStartMessage,
     RapidWindListenStartMessage,
 )
+from weatherflow4py.models.ws.websocket_response import (
+    RapidWindWS,
+    ObservationTempestWS,
+)
 from weatherflow4py.ws import WebsocketAPI
 
 import logging
@@ -19,8 +23,12 @@ def invalid_data_cb(data):
     print("Invalid data ❗️ received:", data)
 
 
-def wind_cb(data):
+def wind_cb(data: RapidWindWS):
     print("Wind 🍃 data received:", data)
+
+
+def obs_cb(data: ObservationTempestWS):
+    print("Observation 🔎️ data received:", data)
 
 
 async def main():
@@ -31,7 +39,8 @@ async def main():
 
     api = WebsocketAPI(device, token)
     api._register_callback(EventType.INVALID, invalid_data_cb)
-    api.register_wind_callback(wind_cb)
+    api.register_observation_callback(obs_cb)
+    # api.register_wind_callback(wind_cb)
 
     await api.connect()
     await api.send_message(ListenStartMessage(device_id=device))

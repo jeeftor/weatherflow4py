@@ -38,6 +38,24 @@ class WebsocketAPI:
         """Register a callback for a specific message type"""
         self.callbacks[message_type.value] = callback
 
+    def register_invalid_data_callback(self, callback: Callable[[str], None]):
+        """
+        Register a callback for the 'invalid' event.
+
+        The callback should be a function that takes a single argument of type str.
+
+        Example:
+            def invalid_callback(data: str):
+                print("Received invalid data:", data)
+
+            api = WebsocketAPI(device_id, access_token)
+            api.register_invalid(invalid_callback)
+
+        Args:
+            callback (Callable[[str], None]): The callback function to register.
+        """
+        self.callbacks[EventType.INVALID.value] = callback
+
     def register_wind_callback(self, callback: Callable[[RapidWindWS], None]):
         """
         Register a callback for the 'rapid_wind' event.
