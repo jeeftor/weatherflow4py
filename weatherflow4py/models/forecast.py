@@ -200,7 +200,7 @@ class ForecastDaily:
             "native_precipitation": None,
             "native_pressure": None,
             "native_temperature": self.air_temp_high,
-            "native_templow": self.air_temp_high,
+            "native_templow": self.air_temp_low,
             "native_wind_gust_speed": None,
             "native_wind_speed": None,
             "precipitation_probability": self.precip_probability,
