@@ -3,8 +3,11 @@ from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json
 
+from weatherflow4py.models.rest.forecast import WindDirection
+
 
 class WetBulbFlag(Enum):
+    NONE = 0
     WHITE = 1
     GREEN = 2
     YELLOW = 3
@@ -54,10 +57,35 @@ class Observation:
     wind_lull: float
 
     @property
-    def wet_bulb_globe_temperature_category(self) -> int:
-        """Calculates a wet bulb globe temp category - based on wikipedia: https://en.wikipedia.org/wiki/Wet-bulb_globe_temperature."""
+    def wind_cardinal_direction(self) -> str:
+        dirs = [
+            WindDirection.N,
+            WindDirection.NNE,
+            WindDirection.NE,
+            WindDirection.ENE,
+            WindDirection.E,
+            WindDirection.ESE,
+            WindDirection.SE,
+            WindDirection.SSE,
+            WindDirection.S,
+            WindDirection.SSW,
+            WindDirection.SW,
+            WindDirection.WSW,
+            WindDirection.W,
+            WindDirection.WNW,
+            WindDirection.NW,
+            WindDirection.NNW,
+        ]
+        ix = round(self.wind_direction / (360.0 / len(dirs)))
+        return dirs[ix % len(dirs)].value
 
+    @property
+    def wet_bulb_globe_temperature_category(self) -> int:
+        """Calculates a wet bulb globe temp category - based on wikipedia:
+        https://en.wikipedia.org/wiki/Wet-bulb_globe_temperature."""
         if self.wet_bulb_globe_temperature <= 25.6:
+            return 0  # No Risk
+        if self.wet_bulb_globe_temperature <= 27.7:
             return 1  # Low risk
         if self.wet_bulb_globe_temperature <= 29.4:
             return 2  # Moderate risk

@@ -15,8 +15,9 @@ from weatherflow4py.models.ws.websocket_response import (
 from weatherflow4py.ws import WeatherFlowWebsocketAPI
 
 import logging
+from pprint import pprint
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 
 def invalid_data_cb(data):
@@ -39,15 +40,17 @@ async def main():
 
     api = WeatherFlowWebsocketAPI(device, token)
     api._register_callback(EventType.INVALID, invalid_data_cb)
-    api.register_observation_callback(obs_cb)
+    # api.register_observation_callback(obs_cb)
     # api.register_wind_callback(wind_cb)
 
     await api.connect()
     await api.send_message(ListenStartMessage(device_id=device))
     await api.send_message(RapidWindListenStartMessage(device_id=device))
 
-    # await asyncio.sleep(30)
-    # print("DATA::", api.messages)
+    while True:
+        await asyncio.sleep(120)
+        # print("DATA::", api.messages)
+        pprint(api.messages)
     # print(api.listen_task)
     #
     # await asyncio.sleep(30)
@@ -68,7 +71,7 @@ async def main():
     #
     # await asyncio.sleep(120)
 
-    await asyncio.sleep(30000)
+    await asyncio.sleep(30000000000000)
     await api.close()
 
 
