@@ -19,7 +19,7 @@ from weatherflow4py.models.ws.websocket_response import (
 )
 
 
-class WebsocketAPI:
+class WeatherFlowWebsocketAPI:
     def __init__(self, device_id: str, access_token: str):
         self.device_id = device_id
         self.uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"

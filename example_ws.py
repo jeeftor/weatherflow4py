@@ -12,7 +12,7 @@ from weatherflow4py.models.ws.websocket_response import (
     RapidWindWS,
     ObservationTempestWS,
 )
-from weatherflow4py.ws import WebsocketAPI
+from weatherflow4py.ws import WeatherFlowWebsocketAPI
 
 import logging
 
@@ -37,7 +37,7 @@ async def main():
     token = os.getenv("TOKEN")
     device = os.getenv("DEVICE")
 
-    api = WebsocketAPI(device, token)
+    api = WeatherFlowWebsocketAPI(device, token)
     api._register_callback(EventType.INVALID, invalid_data_cb)
     api.register_observation_callback(obs_cb)
     # api.register_wind_callback(wind_cb)
