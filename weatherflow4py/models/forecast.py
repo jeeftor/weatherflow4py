@@ -22,6 +22,9 @@ class Condition(Enum):
     CLOUDY = "Cloudy"
     PARTLY_CLOUDY = "Partly Cloudy"
     VERY_LIGHT_RAIN = "Very Light Rain"
+    LIGHT_RAIN = "Light Rain"
+    MODERATE_RAIN = "Moderate Rain"
+    HEAVY_RAIN = "Heavy Rain"
 
 
 class Icon(Enum):
