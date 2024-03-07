@@ -22,6 +22,9 @@ class Condition(Enum):
     CLOUDY = "Cloudy"
     PARTLY_CLOUDY = "Partly Cloudy"
     VERY_LIGHT_RAIN = "Very Light Rain"
+    LIGHT_RAIN = "Light Rain"
+    MODERATE_RAIN = "Moderate Rain"
+    HEAVY_RAIN = "Heavy Rain"
 
 
 class Icon(Enum):
@@ -197,7 +200,7 @@ class ForecastDaily:
             "native_precipitation": None,
             "native_pressure": None,
             "native_temperature": self.air_temp_high,
-            "native_templow": self.air_temp_high,
+            "native_templow": self.air_temp_low,
             "native_wind_gust_speed": None,
             "native_wind_speed": None,
             "precipitation_probability": self.precip_probability,
