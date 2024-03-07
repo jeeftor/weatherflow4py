@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 
 from weatherflow4py.models.rest.device import DeviceObservationTempestREST
@@ -18,3 +20,7 @@ class WeatherFlowData:
     station: Station
     observation: StationObservation
     device_observations: DeviceObservationTempestREST | None
+
+    @property
+    def primary_device_id(self) -> int:
+        return self.station.outdoor_devices[0].device_id
