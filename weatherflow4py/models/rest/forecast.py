@@ -12,6 +12,7 @@ class Condition(Enum):
     RAIN_LIKELY = "Rain Likely"
     RAIN_POSSIBLE = "Rain Possible"
     SNOW = "Snow"
+    SNOW_LIKELY = ("Snow Likely",)
     SNOW_POSSIBLE = "Snow Possible"
     WINTRY_MIX_LIKELY = "Wintry Mix Likely"
     WINTRY_MIX_POSSIBLE = "Wintry Mix Possible"
@@ -25,6 +26,7 @@ class Condition(Enum):
     LIGHT_RAIN = "Light Rain"
     MODERATE_RAIN = "Moderate Rain"
     HEAVY_RAIN = "Heavy Rain"
+    EXTREME_RAIN = "Extreme Rain"
 
 
 class Icon(Enum):
