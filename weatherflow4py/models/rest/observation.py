@@ -99,6 +99,18 @@ class Observation:
     def wet_bulb_globe_temperature_flag(self) -> WetBulbFlag:
         return WetBulbFlag(self.wet_bulb_globe_temperature_category)
 
+    @property
+    def uv_index_color(self) -> str:
+        if self.uv <= 2:
+            return "green"
+        if self.uv <= 5:
+            return "yellow"
+        if self.uv <= 7:
+            return "orange"
+        if self.uv <= 10:
+            return "red"
+        return "purple"
+
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
