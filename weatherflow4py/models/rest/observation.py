@@ -97,7 +97,7 @@ class Observation:
 
     @property
     def wet_bulb_globe_temperature_flag(self) -> WetBulbFlag:
-        return WetBulbFlag(self.wet_bulb_globe_temperature)
+        return WetBulbFlag(self.wet_bulb_globe_temperature_category)
 
 
 @dataclass_json
