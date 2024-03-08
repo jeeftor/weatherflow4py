@@ -101,6 +101,7 @@ class Observation:
 
     @property
     def uv_index_color(self) -> str:
+        """Return the UV index color."""
         if self.uv <= 2:
             return "green"
         if self.uv <= 5:
@@ -110,6 +111,19 @@ class Observation:
         if self.uv <= 10:
             return "red"
         return "purple"
+
+    @property
+    def uv_index_exposure(self) -> str:
+        """Return the UV exposure level."""
+        if self.uv <= 2:
+            return "low"
+        if self.uv <= 5:
+            return "moderate"
+        if self.uv <= 7:
+            return "high"
+        if self.uv <= 10:
+            return "very high"
+        return "extreme"
 
 
 @dataclass_json
