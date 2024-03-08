@@ -95,6 +95,7 @@ class Observation:
             return 4
         return 5
 
+    @property
     def wet_bulb_globe_temperature_flag(self) -> WetBulbFlag:
         return WetBulbFlag(self.wet_bulb_globe_temperature)
 
