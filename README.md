@@ -13,3 +13,5 @@ It supports Rest and WebSockets
 - https://weatherflow.github.io/Tempest/api/ws.html
 
 
+- [PyPi Link](https://pypi.org/project/weatherflow4py/)
+- [Test PyPi Link](https://test.pypi.org/project/weatherflow4py/)
