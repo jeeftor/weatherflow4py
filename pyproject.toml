@@ -1,6 +1,5 @@
 [tool.poetry]
 name = "weatherflow4py"
-
 version = "0.2.6"
 description = ""
 authors = ["Jeef <jeeftor@users.noreply.github.com>"]
