@@ -6,6 +6,7 @@ from weatherflow4py.models.rest.forecast import WeatherData
 from weatherflow4py.models.rest.observation import StationObservation
 from weatherflow4py.models.rest.station import StationsResponse
 from weatherflow4py.models.rest.unified import WeatherFlowData
+from .const import LOGGER
 
 
 class WeatherFlowRestAPI:
@@ -45,7 +46,7 @@ class WeatherFlowRestAPI:
         try:
             return response_model.from_json(data) if response_model else None
         except Exception as e:
-            print(
+            LOGGER.error(
                 f"An error occurred while converting data to response model: {str(e)}"
             )
             return None
