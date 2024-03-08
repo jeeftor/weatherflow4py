@@ -42,11 +42,13 @@ class WeatherFlowRestAPI:
             response.raise_for_status()
             data = await response.text()
 
-        return (
-            response_model.from_json(data)
-            if response_model
-            else aiohttp.helpers.BasicAuth.from_url(response.json())
-        )
+        try:
+            return response_model.from_json(data) if response_model else None
+        except Exception as e:
+            print(
+                f"An error occurred while converting data to response model: {str(e)}"
+            )
+            return None
 
     async def async_get_stations(self) -> StationsResponse:
         """
