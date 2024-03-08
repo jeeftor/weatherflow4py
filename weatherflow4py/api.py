@@ -20,6 +20,7 @@ class WeatherFlowRestAPI:
         if not api_token:
             raise TokenError
 
+        LOGGER.debug("Initializing the WeatherFlow API with token", api_token)
         self.api_token = api_token
 
     async def __aenter__(self):
@@ -39,9 +40,12 @@ class WeatherFlowRestAPI:
 
         url = f"{self.BASE_URL}/{endpoint}"
         full_params = {"token": self.api_token, **(params or {})}
+        LOGGER.debug(f"Making request to {url} with params {full_params}")
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
             data = await response.text()
+
+            LOGGER.debug(f"Received response: {data}")
 
         try:
             return response_model.from_json(data) if response_model else None
