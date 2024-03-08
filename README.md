@@ -3,4 +3,13 @@
 Simple Python library used by Home Assistant to interact with the WeatherFlow RESTApi
 
 
-It supports Rest and Websockets
+It supports Rest and WebSockets
+
+
+### Utilizes these resources
+
+- https://apidocs.tempestwx.com/reference/quick-start
+- https://weatherflow.github.io/Tempest/api/swagger/
+- https://weatherflow.github.io/Tempest/api/ws.html
+
+
