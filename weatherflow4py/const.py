@@ -1,3 +1,3 @@
 import logging
 
-LOGGER = logging.getLogger(__name__)
+LOGGER = logging.getLogger("weatherflow4py")
