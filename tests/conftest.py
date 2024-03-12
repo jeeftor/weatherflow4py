@@ -89,6 +89,13 @@ def observation_json() -> dict:
 
 
 @pytest.fixture
+def observation2_json() -> dict:
+    with open(os.path.join(dir_path, "fixtures/observation2.json"), "r") as json_file:
+        data = json.load(json_file)
+    return data
+
+
+@pytest.fixture
 def unauthorized_json() -> dict:
     """Load the forecast.json fixture file."""
     with open(os.path.join(dir_path, "fixtures/401.json"), "r") as json_file:
