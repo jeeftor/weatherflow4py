@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json
@@ -32,15 +32,7 @@ class Observation:
     lightning_strike_last_distance: int
     lightning_strike_last_epoch: int
     precip: float
-    precip_accum_last_1hr: float
-    precip_accum_local_day: float
-    precip_accum_local_day_final: float
-    precip_accum_local_yesterday: float
-    precip_accum_local_yesterday_final: float
-    precip_analysis_type_yesterday: int
-    precip_minutes_local_day: int
-    precip_minutes_local_yesterday: int
-    precip_minutes_local_yesterday_final: int
+
     pressure_trend: str
     relative_humidity: int
     sea_level_pressure: float
@@ -55,6 +47,16 @@ class Observation:
     wind_direction: int
     wind_gust: float
     wind_lull: float
+
+    precip_accum_last_1hr: float = field(default=0.0)
+    precip_accum_local_day: float = field(default=0.0)
+    precip_accum_local_day_final: float = field(default=0.0)
+    precip_accum_local_yesterday: float = field(default=0.0)
+    precip_accum_local_yesterday_final: float = field(default=0.0)
+    precip_analysis_type_yesterday: int = field(default=0)
+    precip_minutes_local_day: int = field(default=0)
+    precip_minutes_local_yesterday: int = field(default=0)
+    precip_minutes_local_yesterday_final: int = field(default=0)
 
     @property
     def wind_cardinal_direction(self) -> str:
