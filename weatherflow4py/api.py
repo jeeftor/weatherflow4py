@@ -8,6 +8,8 @@ from weatherflow4py.models.rest.station import StationsResponse
 from weatherflow4py.models.rest.unified import WeatherFlowData
 from .const import LOGGER
 
+from yarl import URL
+
 
 class WeatherFlowRestAPI:
     """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per
@@ -20,7 +22,7 @@ class WeatherFlowRestAPI:
         if not api_token:
             raise TokenError
 
-        LOGGER.debug("Initializing the WeatherFlow API with token", api_token)
+        LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
         self.api_token = api_token
 
     async def __aenter__(self):
@@ -38,9 +40,17 @@ class WeatherFlowRestAPI:
                 "Session is not initialized. Use the async with statement."
             )
 
-        url = f"{self.BASE_URL}/{endpoint}"
+        # url = f"{self.BASE_URL}/{endpoint}"
+        # full_params = {"token": self.api_token, **(params or {})}
+        #
+        # full_params = {"token": self.api_token, **(params or {})}
+        # url = url.with_query(full_params)
+
+        url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
-        LOGGER.debug(f"Making request to {url} with params {full_params}")
+        url = url.with_query(full_params)
+
+        LOGGER.debug(f"Making request to {url}")
 
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
