@@ -11,7 +11,21 @@ from weatherflow4py.models.ws.websocket_response import (
     ObservationTempestWS,
     RapidWindWS,
     EventDataRapidWind,
+    LightningStrikeEventWS,
 )
+
+
+def test_ws_strike(websocket_strike):
+    lse: LightningStrikeEventWS = LightningStrikeEventWS.from_dict(websocket_strike)
+    assert lse.unknown_fields == {
+        "hub_sn": "HB-00061234",
+        "serial_number": "ST-00081234",
+        "source": "enhanced",
+    }
+
+    assert lse.energy == -182
+    assert lse.epoch == 1710383159
+    assert lse.distance_km == 13
 
 
 def test_websocket_messages(websocket_messages):

@@ -26,6 +26,13 @@ def websocket_winds() -> list:
 
 
 @pytest.fixture
+def websocket_strike() -> dict:
+    with open(os.path.join(dir_path, "fixtures/ws_strike.json"), "r") as json_file:
+        data = json.load(json_file)
+    return data
+
+
+@pytest.fixture
 def ws_obs_air() -> dict:
     """Load the ws_obs_air.json fixture file."""
     with open(os.path.join(dir_path, "fixtures/ws_obs_air.json"), "r") as json_file:

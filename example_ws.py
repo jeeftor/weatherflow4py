@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 from weatherflow4py.models.ws.types import EventType
 from weatherflow4py.models.ws.websocket_request import (
     ListenStartMessage,
-    RapidWindListenStartMessage,
 )
 from weatherflow4py.models.ws.websocket_response import (
     RapidWindWS,
@@ -16,6 +15,9 @@ from weatherflow4py.ws import WeatherFlowWebsocketAPI
 
 import logging
 from pprint import pprint
+
+ws_logger = logging.getLogger("websockets.client")
+ws_logger.setLevel(logging.INFO)
 
 logging.basicConfig(level=logging.DEBUG)
 
@@ -45,7 +47,7 @@ async def main():
 
     await api.connect()
     await api.send_message(ListenStartMessage(device_id=device))
-    await api.send_message(RapidWindListenStartMessage(device_id=device))
+    # await api.send_message(RapidWindListenStartMessage(device_id=device))
 
     while True:
         await asyncio.sleep(120)

@@ -41,6 +41,7 @@ class WeatherFlowRestAPI:
         url = f"{self.BASE_URL}/{endpoint}"
         full_params = {"token": self.api_token, **(params or {})}
         LOGGER.debug(f"Making request to {url} with params {full_params}")
+
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
             data = await response.text()

@@ -48,6 +48,7 @@ class Observation:
     wind_gust: float
     wind_lull: float
 
+    # Potentially optional fields based on test data - this may grow over time.
     precip_accum_last_1hr: float = field(default=0.0)
     precip_accum_local_day: float = field(default=0.0)
     precip_accum_local_day_final: float = field(default=0.0)

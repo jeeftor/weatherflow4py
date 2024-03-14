@@ -4,20 +4,23 @@ Documentation form:
  - https://apidocs.tempestwx.com/reference/websocket-reference#lightning-strike-event
  - https://weatherflow.github.io/Tempest/api/ws.html
 """
+from __future__ import annotations
+
 from dataclasses import dataclass
 from typing import List
 
-from dataclasses_json import dataclass_json
+from dataclasses_json import dataclass_json, Undefined, CatchAll
 
 from weatherflow4py.models.rest.device import Summary
 from weatherflow4py.models.rest.forecast import WindDirection
 from weatherflow4py.models.ws.obs import WebsocketObservation
 
 
-@dataclass_json
+@dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class BaseResponseWS:
     type: str
+    unknown_fields: CatchAll
 
 
 @dataclass_json
@@ -30,13 +33,6 @@ class AcknowledgementWS(BaseResponseWS):
 @dataclass
 class RainStartEventWS(BaseResponseWS):
     device_id: int
-
-
-@dataclass
-class EventDataLightningStrike:
-    epoch: int
-    distance_km: int
-    energy: int
 
 
 @dataclass
@@ -72,9 +68,16 @@ class EventDataRapidWind:
         return dirs[ix % len(dirs)]
 
 
+@dataclass
+class EventDataLightningStrike:
+    epoch: int
+    distance_km: int
+    energy: int
+
+
 @dataclass_json
 @dataclass
-class LightningStrikeEventWS(BaseResponseWS, EventDataLightningStrike):
+class LightningStrikeEventWS(BaseResponseWS):
     """
     Field   Type	    Description
     0	    timestamp	Epoch (seconds, UTC)
@@ -87,6 +90,18 @@ class LightningStrikeEventWS(BaseResponseWS, EventDataLightningStrike):
 
     def __post_init__(self):
         self.evt = EventDataLightningStrike(self.evt[0], self.evt[1], self.evt[2])
+
+    @property
+    def epoch(self) -> int:
+        return self.evt.epoch
+
+    @property
+    def distance_km(self) -> int:
+        return self.evt.distance_km
+
+    @property
+    def energy(self) -> int:
+        return self.evt.energy
 
 
 @dataclass_json
