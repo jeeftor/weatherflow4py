@@ -2,10 +2,10 @@ import aiohttp
 
 from weatherflow4py.exceptions import TokenError
 from weatherflow4py.models.rest.device import DeviceObservationTempestREST
-from weatherflow4py.models.rest.forecast import WeatherData
-from weatherflow4py.models.rest.observation import StationObservation
-from weatherflow4py.models.rest.station import StationsResponse
-from weatherflow4py.models.rest.unified import WeatherFlowData
+from weatherflow4py.models.rest.forecast import WeatherDataForecastREST
+from weatherflow4py.models.rest.observation import ObservationStationREST
+from weatherflow4py.models.rest.stations import StationsResponseREST
+from weatherflow4py.models.rest.unified import WeatherFlowDataREST
 from .const import LOGGER
 
 from yarl import URL
@@ -40,17 +40,11 @@ class WeatherFlowRestAPI:
                 "Session is not initialized. Use the async with statement."
             )
 
-        # url = f"{self.BASE_URL}/{endpoint}"
-        # full_params = {"token": self.api_token, **(params or {})}
-        #
-        # full_params = {"token": self.api_token, **(params or {})}
-        # url = url.with_query(full_params)
-
         url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
-        url = url.with_query(full_params)
+        full_url = url.with_query(full_params)
 
-        LOGGER.debug(f"Making request to {url}")
+        LOGGER.debug(f"Making request to {full_url}")
 
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
@@ -61,43 +55,43 @@ class WeatherFlowRestAPI:
         try:
             return response_model.from_json(data) if response_model else None
         except Exception as e:
-            LOGGER.error(
-                f"An error occurred while converting data to response model: {str(e)}"
-            )
-            return None
+            error_msg = f"Unable to convert data || {data} || to || {response_model} -- {str(e)}"
+            print(error_msg)
+            LOGGER.error(error_msg)
+            raise e
 
-    async def async_get_stations(self) -> StationsResponse:
+    async def async_get_stations(self) -> StationsResponseREST:
         """
-        Gets station data.
+        Gets station_id data.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        ret = await self._make_request("stations", response_model=StationsResponse)
+        ret = await self._make_request("stations", response_model=StationsResponseREST)
         return ret
 
-    async def async_get_station(self, station_id: int) -> StationsResponse:
+    async def async_get_station(self, station_id: int) -> StationsResponseREST:
         """
-        Gets data for a specific station.
+        Gets data for a specific station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
         return (
             await self._make_request(
-                f"stations/{station_id}", response_model=StationsResponse
+                f"stations/{station_id}", response_model=StationsResponseREST
             )
         ).stations
 
-    async def async_get_forecast(self, station_id: int):
+    async def async_get_forecast(self, station_id: int) -> WeatherDataForecastREST:
         """
-        Gets the forecast for a given station.
+        Gets the forecast for a given station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
@@ -105,60 +99,61 @@ class WeatherFlowRestAPI:
         return await self._make_request(
             "better_forecast",
             params={"station_id": station_id},
-            response_model=WeatherData,
+            response_model=WeatherDataForecastREST,
         )
 
     async def async_get_device_observations(
         self, device_id: int
     ) -> DeviceObservationTempestREST:
         """
-        Gets the device observation data for a given device.
+        Gets the device_id observation data for a given device_id.
 
         Args:
-            device_id (int): The ID of the device.
+            device_id (int): The ID of the device_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        return await self._make_request(
+        obs_data = await self._make_request(
             f"observations/device/{device_id}",
             response_model=DeviceObservationTempestREST,
         )
 
-    async def async_get_observation(self, station_id: int) -> StationObservation:
+        return obs_data
+
+    async def async_get_observation(self, station_id: int) -> ObservationStationREST:
         """
-        Gets the observation data for a given station.
+        Gets the observation data for a given station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
         return await self._make_request(
-            "observations/station",
-            params={"station_id": station_id},
-            response_model=StationObservation,
+            f"observations/station/{station_id}",
+            response_model=ObservationStationREST,
         )
 
     async def get_all_data(
         self, get_device_observations: bool = False
-    ) -> dict[int, WeatherFlowData]:
+    ) -> dict[int, WeatherFlowDataREST]:
         """
         Builds a full data set of stations and forecasts. If get_device_observations is True,
-        it also fetches device observations for each station. Otherwise, device_observations
-        will be set to None for each station.
+        it also fetches device_id observations for each station_id. Otherwise, device_observations
+        will be set to None for each station_id.
 
         Args:
-            get_device_observations (bool): Whether to fetch device observations for each station.
+            get_device_observations (bool): Whether to fetch device_id observations for each station_id.
 
         Returns:
-            dict[int, WeatherFlowData]: A dictionary mapping station IDs to their corresponding data.
+            dict[int, WeatherFlowDataREST]: A dictionary mapping station_id IDs to their corresponding data.
 
         Raises:
             ClientResponseError: If there is a client response error during data retrieval.
         """
-        ret: dict[int, WeatherFlowData] = {}
+        ret: dict[int, WeatherFlowDataREST] = {}
         station_response = await self.async_get_stations()
         for station in station_response.stations:
             device_id = station.outdoor_devices[0].device_id
@@ -169,7 +164,7 @@ class WeatherFlowRestAPI:
                     device_id=device_id
                 )
 
-            ret[station.station_id] = WeatherFlowData(
+            ret[station.station_id] = WeatherFlowDataREST(
                 weather=await self.async_get_forecast(station_id=station.station_id),
                 observation=await self.async_get_observation(
                     station_id=station.station_id

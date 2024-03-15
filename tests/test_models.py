@@ -2,38 +2,41 @@ import json
 
 import pytest
 
+from weatherflow4py.models.rest.stations import StationsResponseREST
 from weatherflow4py.models.ws.custom_types import PrecipitationType
 from weatherflow4py.models.rest.device import (
     DeviceObservationTempestREST,
     PrecipitationAnalysisType,
 )
 from weatherflow4py.models.rest.forecast import (
-    WeatherData,
+    WeatherDataForecastREST,
     Forecast,
     CurrentConditions,
     ForecastUnits,
 )
 from weatherflow4py.models.ws.obs import ObservationType
-from weatherflow4py.models.rest.observation import StationObservation
+from weatherflow4py.models.rest.observation import ObservationStationREST
 
 
-def test_convert_json_to_observation(observation_json):
+def test_convert_json_to_observation(rest_station_observation1):
     try:
-        obs_data = StationObservation.from_dict(observation_json)
+        obs_data = ObservationStationREST.from_dict(rest_station_observation1)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to Observation: {e}")
 
-    assert isinstance(obs_data, StationObservation)
-    assert obs_data.elevation == observation_json["elevation"]
-    assert obs_data.is_public == observation_json["is_public"]
-    assert obs_data.latitude == observation_json["latitude"]
-    assert obs_data.longitude == observation_json["longitude"]
-    assert obs_data.public_name == observation_json["public_name"]
-    assert obs_data.station_id == observation_json["station_id"]
-    assert obs_data.station_name == observation_json["station_name"]
-    assert obs_data.timezone == observation_json["timezone"]
+    assert obs_data.unknown_fields == {}
 
-    for obs, obs_json in zip(obs_data.obs, observation_json["obs"]):
+    assert isinstance(obs_data, ObservationStationREST)
+    assert obs_data.elevation == rest_station_observation1["elevation"]
+    assert obs_data.is_public == rest_station_observation1["is_public"]
+    assert obs_data.latitude == rest_station_observation1["latitude"]
+    assert obs_data.longitude == rest_station_observation1["longitude"]
+    assert obs_data.public_name == rest_station_observation1["public_name"]
+    assert obs_data.station_id == rest_station_observation1["station_id"]
+    assert obs_data.station_name == rest_station_observation1["station_name"]
+    assert obs_data.timezone == rest_station_observation1["timezone"]
+
+    for obs, obs_json in zip(obs_data.obs, rest_station_observation1["obs"]):
         assert obs.air_density == obs_json["air_density"]
         assert obs.air_temperature == obs_json["air_temperature"]
         assert obs.barometric_pressure == obs_json["barometric_pressure"]
@@ -100,23 +103,26 @@ def test_convert_json_to_observation(observation_json):
         assert obs.wind_lull == obs_json["wind_lull"]
 
 
-def test_convert_json_to_observation2(observation2_json):
+def test_convert_json_to_observation2(rest_station_observation2):
     try:
-        obs_data = StationObservation.from_dict(observation2_json)
+        obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to Observation: {e}")
+    assert obs_data.unknown_fields == {}
 
-    assert isinstance(obs_data, StationObservation)
-    assert obs_data.elevation == observation2_json["elevation"]
-    assert obs_data.is_public == observation2_json["is_public"]
-    assert obs_data.latitude == observation2_json["latitude"]
-    assert obs_data.longitude == observation2_json["longitude"]
-    assert obs_data.public_name == observation2_json["public_name"]
-    assert obs_data.station_id == observation2_json["station_id"]
-    assert obs_data.station_name == observation2_json["station_name"]
-    assert obs_data.timezone == observation2_json["timezone"]
+    assert isinstance(obs_data, ObservationStationREST)
+    assert obs_data.elevation == rest_station_observation2["elevation"]
+    assert obs_data.is_public == rest_station_observation2["is_public"]
+    assert obs_data.latitude == rest_station_observation2["latitude"]
+    assert obs_data.longitude == rest_station_observation2["longitude"]
+    assert obs_data.public_name == rest_station_observation2["public_name"]
+    assert obs_data.station_id == rest_station_observation2["station_id"]
+    assert obs_data.station_name == rest_station_observation2["station_name"]
+    assert obs_data.timezone == rest_station_observation2["timezone"]
 
-    for obs, obs_json in zip(obs_data.obs, observation2_json["obs"]):
+    assert obs_data.obs[0].precip_accum_local_day_final == 0
+
+    for obs, obs_json in zip(obs_data.obs, rest_station_observation2["obs"]):
         assert obs.air_density == obs_json["air_density"]
         assert obs.air_temperature == obs_json["air_temperature"]
         assert obs.barometric_pressure == obs_json["barometric_pressure"]
@@ -175,14 +181,14 @@ def test_convert_json_to_observation2(observation2_json):
         assert obs.wind_lull == obs_json["wind_lull"]
 
 
-def test_convert_json_to_weather_data(forecast_json):
+def test_convert_json_to_weather_data(rest_betterforecast_1):
     try:
-        weather_data = WeatherData.from_dict(forecast_json)
+        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
 
         # Assert that the conversion was successful
-    assert isinstance(weather_data, WeatherData)
+    assert isinstance(weather_data, WeatherDataForecastREST)
 
     assert isinstance(weather_data.current_conditions, CurrentConditions)
     assert isinstance(weather_data.forecast, Forecast)
@@ -194,14 +200,14 @@ def test_convert_json_to_weather_data(forecast_json):
     assert isinstance(weather_data.units, ForecastUnits)
 
 
-def test_convert_json_to_weather_data2(forecast2_json):
+def test_convert_json_to_weather_data2(rest_betterforecast_2):
     try:
-        weather_data = WeatherData.from_dict(forecast2_json)
+        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_2)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
 
         # Assert that the conversion was successful
-    assert isinstance(weather_data, WeatherData)
+    assert isinstance(weather_data, WeatherDataForecastREST)
 
     assert isinstance(weather_data.current_conditions, CurrentConditions)
     assert isinstance(weather_data.forecast, Forecast)
@@ -213,9 +219,9 @@ def test_convert_json_to_weather_data2(forecast2_json):
     assert isinstance(weather_data.units, ForecastUnits)
 
 
-def test_convert_weather_data_ha_forecast(forecast_json):
+def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
     try:
-        weather_data = WeatherData.from_dict(forecast_json)
+        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
     except Exception as e:
         pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
 
@@ -294,3 +300,14 @@ def test_obs_st(obs_st_json):
     assert obs_st.nc_rain_accumulation == obs_st_json["obs"][0][19]
     assert obs_st.local_day_nc_rain_accumulation == obs_st_json["obs"][0][20]
     assert obs_st.precipitation_analysis_type == PrecipitationAnalysisType.NONE
+
+
+def test_rest_stations_endpoint(rest_stations_json):
+    station_data = StationsResponseREST.from_dict(rest_stations_json)
+
+    assert isinstance(station_data, StationsResponseREST)
+
+
+def test_rest_station_endpoint(rest_station_json):
+    station_data = StationsResponseREST.from_dict(rest_station_json)
+    assert isinstance(station_data, StationsResponseREST)

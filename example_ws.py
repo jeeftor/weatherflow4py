@@ -47,7 +47,7 @@ async def main():
 
     await api.connect()
     await api.send_message(ListenStartMessage(device_id=device))
-    # await api.send_message(RapidWindListenStartMessage(device_id=device))
+    # await api.send_message(RapidWindListenStartMessage(device_id=device_id))
 
     while True:
         await asyncio.sleep(120)

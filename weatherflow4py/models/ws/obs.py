@@ -44,7 +44,7 @@ class obs_sky(base_obs):
 
 @dataclass
 class obs_st(base_obs):
-    """Dataclass for the station observation type."""
+    """Dataclass for the station_id observation type."""
 
     epoch: int
     wind_lull: float

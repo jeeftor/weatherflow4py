@@ -4,6 +4,10 @@ import os
 from weatherflow4py.api import WeatherFlowRestAPI
 from dotenv import load_dotenv
 
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 
 async def main():
     load_dotenv()  # load environment variables from .env file

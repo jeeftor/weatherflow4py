@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import List
-from dataclasses_json import dataclass_json
+from dataclasses_json import dataclass_json, Undefined, CatchAll
 
 from weatherflow4py.models.rest.forecast import WindDirection
 
@@ -150,9 +150,11 @@ class StationStatus:
     status_message: str
 
 
-@dataclass_json
+@dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass(frozen=True, eq=True)
-class StationObservation:
+class ObservationStationREST:
+    """Top level field for both the observations/device/device_id and observations/station/station_id endpoints."""
+
     elevation: float
     is_public: bool
     latitude: float
@@ -165,3 +167,4 @@ class StationObservation:
     station_units: StationUnits
     status: StationStatus
     timezone: str
+    unknown_fields: CatchAll
