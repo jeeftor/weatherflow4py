@@ -45,6 +45,10 @@ async def test_api_calls(
             "https://swd.weatherflow.com/swd/rest/observations/station/24432?token=mock_token",
             payload=rest_station_observation2,
         )
+        mock.get(
+            "https://swd.weatherflow.com/swd/rest/observations/station/24432?token=mock_token",
+            payload=rest_station_observation2,
+        )
 
         sor = StationsResponseREST.from_dict(rest_stations_json)
         assert isinstance(sor, StationsResponseREST)
@@ -60,6 +64,7 @@ async def test_api_calls(
             data: WeatherFlowDataREST = await api.get_all_data(
                 get_device_observations=True
             )
+
             assert data[24432].station.station_id == 24432
 
 

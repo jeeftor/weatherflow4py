@@ -132,7 +132,8 @@ class Observation:
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class StationUnits:
-    """The station_units values represent the units of the Station's owner, not the units of the observation values in the API response."""
+    """The station_units values represent the units of the Station's owner, not the units of the observation values
+    in the API response."""
 
     units_temp: str
     units_wind: str

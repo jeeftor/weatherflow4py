@@ -15,7 +15,7 @@ from weatherflow4py.models.rest.forecast import (
     ForecastUnits,
 )
 from weatherflow4py.models.ws.obs import ObservationType
-from weatherflow4py.models.rest.observation import ObservationStationREST
+from weatherflow4py.models.rest.observation import ObservationStationREST, WetBulbFlag
 
 
 def test_convert_json_to_observation(rest_station_observation1):
@@ -104,10 +104,7 @@ def test_convert_json_to_observation(rest_station_observation1):
 
 
 def test_convert_json_to_observation2(rest_station_observation2):
-    try:
-        obs_data = ObservationStationREST.from_dict(rest_station_observation2)
-    except Exception as e:
-        pytest.fail(f"Failed to convert JSON data to Observation: {e}")
+    obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     assert obs_data.unknown_fields == {}
 
     assert isinstance(obs_data, ObservationStationREST)
@@ -121,6 +118,12 @@ def test_convert_json_to_observation2(rest_station_observation2):
     assert obs_data.timezone == rest_station_observation2["timezone"]
 
     assert obs_data.obs[0].precip_accum_local_day_final == 0
+
+    assert obs_data.obs[0].wind_cardinal_direction == "SSW"
+    assert obs_data.obs[0].wet_bulb_globe_temperature_flag == WetBulbFlag.NONE
+    assert obs_data.obs[0].wet_bulb_globe_temperature_category == 0
+    assert obs_data.obs[0].uv_index_exposure == "low"
+    assert obs_data.obs[0].uv_index_color == "green"
 
     for obs, obs_json in zip(obs_data.obs, rest_station_observation2["obs"]):
         assert obs.air_density == obs_json["air_density"]
@@ -182,12 +185,9 @@ def test_convert_json_to_observation2(rest_station_observation2):
 
 
 def test_convert_json_to_weather_data(rest_betterforecast_1):
-    try:
-        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
-    except Exception as e:
-        pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
+    weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
 
-        # Assert that the conversion was successful
+    # Assert that the conversion was successful
     assert isinstance(weather_data, WeatherDataForecastREST)
 
     assert isinstance(weather_data.current_conditions, CurrentConditions)
@@ -220,13 +220,14 @@ def test_convert_json_to_weather_data2(rest_betterforecast_2):
 
 
 def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
-    try:
-        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
-    except Exception as e:
-        pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
+    weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
+    forecasts_daily = [x.ha_forecast for x in weather_data.forecast.daily]
+    forecasts_hourly = [x.ha_forecast for x in weather_data.forecast.hourly]
 
-    forecasts = [x.ha_forecast for x in weather_data.forecast.daily]
-    print(forecasts)
+    assert forecasts_hourly[0]["datetime"] == "2023-12-28T18:00:00Z"
+    assert forecasts_hourly[1]["datetime"] == "2023-12-28T19:00:00Z"
+    assert forecasts_hourly[2]["datetime"] == "2023-12-28T20:00:00Z"
+    assert forecasts_daily[0]["datetime"] == "2023-12-28T07:00:00Z"
 
 
 def test_obs_st(obs_st_json):
@@ -235,10 +236,7 @@ def test_obs_st(obs_st_json):
 
     assert obs_dict == obs_json
 
-    try:
-        obs_st = DeviceObservationTempestREST.from_dict(obs_st_json)
-    except Exception as e:
-        pytest.fail(f"Failed to convert JSON data to ObsSky: {e}")
+    obs_st = DeviceObservationTempestREST.from_dict(obs_st_json)
 
     assert isinstance(obs_st, DeviceObservationTempestREST)
 
