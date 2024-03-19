@@ -5,6 +5,8 @@ from dataclasses import dataclass
 from typing import Optional
 from dataclasses_json import dataclass_json
 
+from weatherflow4py.models.rest.status import Status
+
 
 @dataclass_json
 @dataclass(frozen=True, order=True)
@@ -94,13 +96,6 @@ class Stations:
     @property
     def elevation(self) -> float:
         return self.station_meta.elevation
-
-
-@dataclass_json
-@dataclass(frozen=True, order=True)
-class Status:
-    status_code: int
-    status_message: str
 
 
 @dataclass_json

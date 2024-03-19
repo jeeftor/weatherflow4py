@@ -264,13 +264,6 @@ class Forecast:
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
-class Status:
-    status_code: int
-    status_message: str
-
-
-@dataclass_json
-@dataclass(frozen=True, eq=True)
 class ForecastUnits:
     units_air_density: str
     units_brightness: str

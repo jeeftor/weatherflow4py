@@ -3,6 +3,7 @@ from typing import List, Union
 
 from dataclasses_json import dataclass_json
 
+from weatherflow4py.models.rest.status import Status
 from weatherflow4py.models.ws.custom_types import (
     PrecipitationAnalysisType,
     ObservationType,
@@ -14,13 +15,6 @@ from weatherflow4py.models.ws.obs import (
     obs_air,
     ObservationFactory,
 )
-
-
-@dataclass_json
-@dataclass
-class Status:
-    status_code: int
-    status_message: str
 
 
 @dataclass_json

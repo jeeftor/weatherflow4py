@@ -88,6 +88,11 @@ def unauthorized_json():
 
 
 @pytest.fixture
+def rest_internal_error_json():
+    return load_fixture("fixtures/rest/internal_error.json")
+
+
+@pytest.fixture
 def rest_station_json():
     return load_fixture("fixtures/rest/stations/station_id/station_id.json")
 

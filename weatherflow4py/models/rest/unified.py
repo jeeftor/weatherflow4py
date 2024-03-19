@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+
 from weatherflow4py.models.rest.device import DeviceObservationTempestREST
 from weatherflow4py.models.rest.forecast import WeatherDataForecastREST
 from weatherflow4py.models.rest.observation import ObservationStationREST

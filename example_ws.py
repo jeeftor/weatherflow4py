@@ -3,7 +3,6 @@ import os
 
 from dotenv import load_dotenv
 
-from weatherflow4py.models.ws.types import EventType
 from weatherflow4py.models.ws.websocket_request import (
     ListenStartMessage,
 )
@@ -27,11 +26,11 @@ def invalid_data_cb(data):
 
 
 def wind_cb(data: RapidWindWS):
-    print("Wind 🍃 data received:", data)
+    print("Wind 🍃")  # data received:", data)
 
 
 def obs_cb(data: ObservationTempestWS):
-    print("Observation 🔎️ data received:", data)
+    print("Observation 🔎️")  # data received:", data)
 
 
 async def main():
@@ -41,8 +40,8 @@ async def main():
     device = os.getenv("DEVICE")
 
     api = WeatherFlowWebsocketAPI(device, token)
-    api._register_callback(EventType.INVALID, invalid_data_cb)
-    # api.register_observation_callback(obs_cb)
+    # api._register_callback(EventType.INVALID, invalid_data_cb)
+    api.register_observation_callback(obs_cb)
     # api.register_wind_callback(wind_cb)
 
     await api.connect()

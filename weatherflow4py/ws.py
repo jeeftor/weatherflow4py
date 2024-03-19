@@ -182,7 +182,8 @@ class WeatherFlowWebsocketAPI:
                             )
                             # If it's not, call it normally
                             self.callbacks[data["type"]](response)
-
+                    else:
+                        LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
                 except ValueError:
                     if EventType.INVALID.value in self.callbacks:
                         if asyncio.iscoroutinefunction(
