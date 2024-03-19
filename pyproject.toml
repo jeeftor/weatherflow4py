@@ -1,15 +1,18 @@
 [tool.poetry]
 name = "weatherflow4py"
 version = "0.1.17"
+version = "0.2.16"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
 authors = ["Jeef <jeeftor@users.noreply.github.com>"]
 readme = "README.md"
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.11"
 dataclasses-json = "^0.6.3"
 aiohttp = ">=3.9.1"
 marshmallow = "^3.20.1"
+websockets = ">=11.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -21,7 +24,26 @@ pytest-asyncio = "^0.23.2"
 aioresponses = "^0.7.6"
 coverage = "^7.4.0"
 python-dotenv = "^1.0.1"
+pytest-cov = "^4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+
+ [tool.pytest.ini_options]
+  #addopts = "-n 8 --cov-report xml:cov.xml --cov src --cov-report term-missing --durations-min
+  testpaths = [
+      "tests"
+  ]
+
+[tool.coverage.report]
+show_missing = true
+
+[tool.coverage.run]
+branch = true
+source = ["weatherflow4py", "tests"]
+
+[tool.coverage.paths]
+source = ["weatherflow4py", "*/site-packages"]
+tests = ["tests", "*/tests"]

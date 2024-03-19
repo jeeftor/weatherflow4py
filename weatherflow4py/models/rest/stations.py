@@ -65,7 +65,7 @@ class Capability:
 
 @dataclass_json
 @dataclass(frozen=True, order=True)
-class Station:
+class Stations:
     created_epoch: int
     devices: list[Device]
     is_local_mode: bool
@@ -105,6 +105,6 @@ class Status:
 
 @dataclass_json
 @dataclass(frozen=True, order=True)
-class StationsResponse:
-    stations: list[Station]
+class StationsResponseREST:
+    stations: list[Stations]
     status: Status

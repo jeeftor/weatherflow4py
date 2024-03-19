@@ -1,15 +1,20 @@
 import aiohttp
 
 from weatherflow4py.exceptions import TokenError
-from weatherflow4py.models.device import DeviceObservationTempest
-from weatherflow4py.models.forecast import WeatherData
-from weatherflow4py.models.observation import StationObservation
-from weatherflow4py.models.station import StationsResponse
-from weatherflow4py.models.unified import WeatherFlowData
+from weatherflow4py.models.rest.device import DeviceObservationTempestREST
+from weatherflow4py.models.rest.forecast import WeatherDataForecastREST
+from weatherflow4py.models.rest.observation import ObservationStationREST
+from weatherflow4py.models.rest.stations import StationsResponseREST
+from weatherflow4py.models.rest.unified import WeatherFlowDataREST
+from .const import LOGGER
+
+from yarl import URL
 
 
 class WeatherFlowRestAPI:
-    """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per minute. There is some burst capacity built into the system, but the general rule of thumb it to keep the number of REST requests per user to under 100 per minute."""
+    """Our REST rate limits are not connected to our web socket rate limits. For REST you can make 100 requests per
+    minute. There is some burst capacity built into the system, but the general rule of thumb it to keep the number
+    of REST requests per user to under 100 per minute."""
 
     BASE_URL = "https://swd.weatherflow.com/swd/rest"
 
@@ -17,6 +22,7 @@ class WeatherFlowRestAPI:
         if not api_token:
             raise TokenError
 
+        LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
         self.api_token = api_token
 
     async def __aenter__(self):
@@ -34,50 +40,58 @@ class WeatherFlowRestAPI:
                 "Session is not initialized. Use the async with statement."
             )
 
-        url = f"{self.BASE_URL}/{endpoint}"
+        url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
+        full_url = url.with_query(full_params)
+
+        LOGGER.debug(f"Making request to {full_url}")
+
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
             data = await response.text()
 
-        return (
-            response_model.from_json(data)
-            if response_model
-            else aiohttp.helpers.BasicAuth.from_url(response.json())
-        )
+            LOGGER.debug(f"Received response: {data}")
 
-    async def async_get_stations(self) -> StationsResponse:
+        try:
+            return response_model.from_json(data) if response_model else None
+        except Exception as e:
+            error_msg = f"Unable to convert data || {data} || to || {response_model} -- {str(e)}"
+            print(error_msg)
+            LOGGER.error(error_msg)
+            raise e
+
+    async def async_get_stations(self) -> StationsResponseREST:
         """
-        Gets station data.
+        Gets station_id data.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        ret = await self._make_request("stations", response_model=StationsResponse)
+        ret = await self._make_request("stations", response_model=StationsResponseREST)
         return ret
 
-    async def async_get_station(self, station_id: int) -> StationsResponse:
+    async def async_get_station(self, station_id: int) -> StationsResponseREST:
         """
-        Gets data for a specific station.
+        Gets data for a specific station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
         return (
             await self._make_request(
-                f"stations/{station_id}", response_model=StationsResponse
+                f"stations/{station_id}", response_model=StationsResponseREST
             )
         ).stations
 
-    async def async_get_forecast(self, station_id: int):
+    async def async_get_forecast(self, station_id: int) -> WeatherDataForecastREST:
         """
-        Gets the forecast for a given station.
+        Gets the forecast for a given station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
@@ -85,63 +99,78 @@ class WeatherFlowRestAPI:
         return await self._make_request(
             "better_forecast",
             params={"station_id": station_id},
-            response_model=WeatherData,
+            response_model=WeatherDataForecastREST,
         )
 
     async def async_get_device_observations(
         self, device_id: int
-    ) -> DeviceObservationTempest:
+    ) -> DeviceObservationTempestREST:
         """
-        Gets the device observation data for a given device.
+        Gets the device_id observation data for a given device_id.
 
         Args:
-            device_id (int): The ID of the device.
+            device_id (int): The ID of the device_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
-        return await self._make_request(
+        obs_data = await self._make_request(
             f"observations/device/{device_id}",
-            response_model=DeviceObservationTempest,
+            response_model=DeviceObservationTempestREST,
         )
 
-    async def async_get_observation(self, station_id: int) -> StationObservation:
+        return obs_data
+
+    async def async_get_observation(self, station_id: int) -> ObservationStationREST:
         """
-        Gets the observation data for a given station.
+        Gets the observation data for a given station_id.
 
         Args:
-            station_id (int): The ID of the station.
+            station_id (int): The ID of the station_id.
 
         Raises:
             ClientResponseError: If there is a client response error.
         """
         return await self._make_request(
-            "observations/station",
-            params={"station_id": station_id},
-            response_model=StationObservation,
+            f"observations/station/{station_id}",
+            response_model=ObservationStationREST,
         )
 
-    async def get_all_data(self) -> dict[int, WeatherFlowData]:
+    async def get_all_data(
+        self, get_device_observations: bool = False
+    ) -> dict[int, WeatherFlowDataREST]:
         """
-        Builds a full data set of stations and forecasts.
+        Builds a full data set of stations and forecasts. If get_device_observations is True,
+        it also fetches device_id observations for each station_id. Otherwise, device_observations
+        will be set to None for each station_id.
+
+        Args:
+            get_device_observations (bool): Whether to fetch device_id observations for each station_id.
+
+        Returns:
+            dict[int, WeatherFlowDataREST]: A dictionary mapping station_id IDs to their corresponding data.
 
         Raises:
             ClientResponseError: If there is a client response error during data retrieval.
         """
-        ret: dict[int, WeatherFlowData] = {}
+        ret: dict[int, WeatherFlowDataREST] = {}
         station_response = await self.async_get_stations()
         for station in station_response.stations:
             device_id = station.outdoor_devices[0].device_id
 
-            ret[station.station_id] = WeatherFlowData(
+            device_observations = None
+            if get_device_observations:
+                device_observations = await self.async_get_device_observations(
+                    device_id=device_id
+                )
+
+            ret[station.station_id] = WeatherFlowDataREST(
                 weather=await self.async_get_forecast(station_id=station.station_id),
                 observation=await self.async_get_observation(
                     station_id=station.station_id
                 ),
                 station=station,
-                device_observations=await self.async_get_device_observations(
-                    device_id=device_id
-                ),
+                device_observations=device_observations,
             )
 
         return ret

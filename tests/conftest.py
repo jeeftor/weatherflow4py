@@ -1,70 +1,105 @@
 import json
+import os
+
 import pytest
 from aioresponses import aioresponses
 from weatherflow4py.api import WeatherFlowRestAPI
 
-
-@pytest.fixture
-def obs_st_json() -> dict:
-    """Load the obs_st.json fixture file."""
-    with open("fixtures/obs_st.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
-@pytest.fixture
-def forecast_json() -> dict:
-    """Load the forecast.json fixture file."""
-    with open("fixtures/forecast.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def load_fixture(file_name):
+    with open(os.path.join(dir_path, file_name), "r") as json_file:
+        return json.load(json_file)
 
 
 @pytest.fixture
-def forecast2_json() -> dict:
-    """Load the forecast.json fixture file."""
-    with open("fixtures/forecast2.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def websocket_messages():
+    return load_fixture("fixtures/ws/websocket_messages.json")
 
 
 @pytest.fixture
-def observation_json() -> dict:
-    with open("fixtures/observation.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def websocket_winds():
+    return load_fixture("fixtures/ws/ws_winds.json")
 
 
 @pytest.fixture
-def unauthorized_json() -> dict:
-    """Load the forecast.json fixture file."""
-    with open("fixtures/401.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def websocket_strike():
+    return load_fixture("fixtures/ws/ws_strike.json")
 
 
 @pytest.fixture
-def station_json() -> dict:
-    """Load the station.json fixture file."""
-    with open("fixtures/station.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def ws_obs_air():
+    return load_fixture("fixtures/ws_obs_air.json")
 
 
 @pytest.fixture
-def stations_json() -> dict:
-    """Load the stations.json fixture file."""
-    with open("fixtures/stations.json", "r") as json_file:
-        data = json.load(json_file)
-    return data
+def ws_obs_sky():
+    return load_fixture("fixtures/ws_obs_sky.json")
 
 
 @pytest.fixture
-async def mock_aioresponse(
-    forecast_json, station_json, stations_json, observation_json
-):
+def ws_obs_st():
+    return load_fixture("fixtures/ws_obs_st.json")
+
+
+@pytest.fixture
+def ws_obs_st_3x():
+    return load_fixture("fixtures/ws_obs_st_3x.json")
+
+
+@pytest.fixture
+def obs_st_json():
+    return load_fixture("fixtures/obs_st.json")
+
+
+@pytest.fixture
+def rest_betterforecast_1():
+    return load_fixture("fixtures/rest/betterforecast/forecast.json")
+
+
+@pytest.fixture
+def rest_betterforecast_2():
+    return load_fixture("fixtures/rest/betterforecast/forecast2.json")
+
+
+@pytest.fixture
+def rest_station_observation1():
+    return load_fixture(
+        "fixtures/rest/observations/station_id/station_observation1.json"
+    )
+
+
+@pytest.fixture
+def rest_station_observation2():
+    return load_fixture(
+        "fixtures/rest/observations/station_id/station_observation2.json"
+    )
+
+
+@pytest.fixture
+def rest_device_observation_1():
+    return load_fixture("fixtures/rest/observations/device_id/1.json")
+
+
+@pytest.fixture
+def unauthorized_json():
+    return load_fixture("fixtures/rest/401.json")
+
+
+@pytest.fixture
+def rest_station_json():
+    return load_fixture("fixtures/rest/stations/station_id/station_id.json")
+
+
+@pytest.fixture
+def rest_stations_json():
+    return load_fixture("fixtures/rest/stations/stations.json")
+
+
+@pytest.fixture
+async def mock_aioresponse():
     with aioresponses() as m:
-        # Setup mock responses here or leave it to be configured in the test functions
         yield m
 
 

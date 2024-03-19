@@ -285,7 +285,7 @@ class ForecastUnits:
 
 @dataclass_json
 @dataclass(frozen=True, eq=True)
-class WeatherData:
+class WeatherDataForecastREST:
     current_conditions: CurrentConditions
     forecast: Forecast
     latitude: float
