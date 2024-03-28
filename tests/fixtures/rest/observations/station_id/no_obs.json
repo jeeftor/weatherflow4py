@@ -1,0 +1,26 @@
+{
+  "elevation": 2063.150146484375,
+  "indoor_keys": [],
+  "is_public": true,
+  "latitude": 43.94962,
+  "longitude": -102.86831,
+  "obs": [],
+  "outdoor_keys": [],
+  "public_name": "My Home Station",
+  "station_id": 24432,
+  "station_name": "My Home Station",
+  "station_units": {
+    "units_direction": "degrees",
+    "units_distance": "mi",
+    "units_other": "metric",
+    "units_precip": "in",
+    "units_pressure": "hpa",
+    "units_temp": "f",
+    "units_wind": "bft"
+  },
+  "status": {
+    "status_code": 0,
+    "status_message": "SUCCESS - Either no capabilities or no recent observations"
+  },
+  "timezone": "America/Denver"
+}

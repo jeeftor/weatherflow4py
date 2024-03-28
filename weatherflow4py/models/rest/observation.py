@@ -3,6 +3,7 @@ from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json, Undefined, CatchAll
 
+from weatherflow4py.const import LOGGER
 from weatherflow4py.models.rest.forecast import WindDirection
 
 
@@ -58,7 +59,6 @@ class Observation:
     lightning_strike_count_last_1hr: int = field(default=0)
     lightning_strike_count_last_3hr: int = field(default=0)
     lightning_strike_last_distance: int = field(default=0)
-
     lightning_strike_last_epoch: int | None = field(default=None)
 
     @property
@@ -151,6 +151,15 @@ class StationUnits:
 class StationStatus:
     status_code: int
     status_message: str
+
+    def __post_init__(self):
+        if (
+            self.status_message
+            == "SUCCESS - Either no capabilities or no recent observations"
+        ):
+            LOGGER.debug(
+                "No Capabilities or Recent Observations - Station may be offline"
+            )
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)

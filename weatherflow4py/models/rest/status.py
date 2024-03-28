@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from dataclasses_json import dataclass_json
+from weatherflow4py.const import LOGGER
 
 
 @dataclass_json
@@ -8,3 +9,12 @@ from dataclasses_json import dataclass_json
 class Status:
     status_code: int
     status_message: str
+
+    def __post_init__(self):
+        if (
+            self.status_message
+            == "SUCCESS - Either no capabilities or no recent observations"
+        ):
+            LOGGER.debug(
+                "No Capabilities or Recent Observations - Station may be offline"
+            )

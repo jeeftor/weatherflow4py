@@ -33,7 +33,7 @@ async def main():
                 print(forecast.units)
 
                 obs = await api.async_get_observation(station_id=station.station_id)
-                print(obs)
+                print(obs.st)
 
                 print(obs.obs[0].air_temperature)
 
