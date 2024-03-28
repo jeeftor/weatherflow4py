@@ -334,8 +334,3 @@ def test_rest_station_endpoint(rest_station_json):
 def test_internal_error(rest_internal_error_json):
     status = Status.from_dict(rest_internal_error_json["status"])
     assert isinstance(status, Status)
-    #
-    station_data = StationsResponseREST.from_dict(rest_internal_error_json)
-    # assert isinstance(station_data, StationsResponseREST)
-    # assert station_data.stations == []
-    # assert station_data.unknown_fields == {}

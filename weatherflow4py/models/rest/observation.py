@@ -26,13 +26,8 @@ class Observation:
     dew_point: float
     feels_like: float
     heat_index: float
-    lightning_strike_count: int
-    lightning_strike_count_last_1hr: int
-    lightning_strike_count_last_3hr: int
-    lightning_strike_last_distance: int
-    lightning_strike_last_epoch: int
-    precip: float
 
+    precip: float
     pressure_trend: str
     relative_humidity: int
     sea_level_pressure: float
@@ -58,6 +53,13 @@ class Observation:
     precip_minutes_local_day: int = field(default=0)
     precip_minutes_local_yesterday: int = field(default=0)
     precip_minutes_local_yesterday_final: int = field(default=0)
+
+    lightning_strike_count: int = field(default=0)
+    lightning_strike_count_last_1hr: int = field(default=0)
+    lightning_strike_count_last_3hr: int = field(default=0)
+    lightning_strike_last_distance: int = field(default=0)
+
+    lightning_strike_last_epoch: int | None = field(default=None)
 
     @property
     def wind_cardinal_direction(self) -> str:

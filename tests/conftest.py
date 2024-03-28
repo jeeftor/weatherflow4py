@@ -88,6 +88,11 @@ def rest_device_observation_1():
 
 
 @pytest.fixture
+def rest_device_observation_2():
+    return load_fixture("fixtures/rest/observations/device_id/2.json")
+
+
+@pytest.fixture
 def unauthorized_json():
     return load_fixture("fixtures/rest/401.json")
 
