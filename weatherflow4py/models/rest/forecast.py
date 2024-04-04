@@ -107,12 +107,14 @@ class PrecipType(Enum):
     SNOW = "snow"
     SLEET = "sleet"
     STORM = "storm"
+    NONE = "none"
 
 
 class PrecipIcon(Enum):
     CHANCE_RAIN = "chance-rain"
     CHANCE_SNOW = "chance-snow"
     CHANCE_SLEET = "chance-sleet"
+    NONE = "none"
 
 
 class PressureTrend(Enum):
@@ -207,12 +209,12 @@ class ForecastDaily:
     day_start_local: int
     icon: Icon
     month_num: int
-
     precip_probability: int
-    precip_type: PrecipType
     sunrise: int
     sunset: int
-    precip_icon: PrecipIcon | None = None
+
+    precip_icon: PrecipIcon = PrecipIcon.NONE
+    precip_type: PrecipType = PrecipType.NONE
 
     @property
     def rfc3939_datetime(self):
