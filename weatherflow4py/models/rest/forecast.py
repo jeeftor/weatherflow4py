@@ -26,6 +26,7 @@ class Condition(Enum):
     LIGHT_RAIN = "Light Rain"
     MODERATE_RAIN = "Moderate Rain"
     HEAVY_RAIN = "Heavy Rain"
+    VERY_HEAVY_RAIN = "Very Heavy Rain"
     EXTREME_RAIN = "Extreme Rain"
 
 
@@ -49,6 +50,31 @@ class Icon(Enum):
     SNOW = "snow"
     THUNDERSTORM = "thunderstorm"
     WINDY = "windy"
+
+    @property
+    def emoji(self) -> str:
+        icon_mapping = {
+            Icon.CLEAR_DAY: "☀️",
+            Icon.CLEAR_NIGHT: "🌌️",
+            Icon.CLOUDY: "☁️",
+            Icon.FOGGY: "🌫️",
+            Icon.PARTLY_CLOUDY_DAY: "⛅️",
+            Icon.PARTLY_CLOUDY_NIGHT: "☁️",
+            Icon.POSSIBLY_RAINY_DAY: "🌧️",
+            Icon.POSSIBLY_RAINY_NIGHT: "🌧️",
+            Icon.POSSIBLY_SLEET_DAY: "🌨️",
+            Icon.POSSIBLY_SLEET_NIGHT: "🌨️",
+            Icon.POSSIBLY_SNOW_DAY: "❄️",
+            Icon.POSSIBLY_SNOW_NIGHT: "❄️",
+            Icon.POSSIBLY_THUNDERSTORM_DAY: "⛈️",
+            Icon.POSSIBLY_THUNDERSTORM_NIGHT: "⛈️",
+            Icon.RAINY: "🌧️",
+            Icon.SLEET: "🌨️",
+            Icon.SNOW: "❄️️",
+            Icon.THUNDERSTORM: "⛈️",
+            Icon.WINDY: "💨️",
+        }
+        return icon_mapping.get(self, "❓️")
 
     @property
     def ha_icon(self) -> str:
