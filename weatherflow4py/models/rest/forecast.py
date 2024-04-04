@@ -207,11 +207,12 @@ class ForecastDaily:
     day_start_local: int
     icon: Icon
     month_num: int
-    precip_icon: PrecipIcon
+
     precip_probability: int
     precip_type: PrecipType
     sunrise: int
     sunset: int
+    precip_icon: PrecipIcon | None = None
 
     @property
     def rfc3939_datetime(self):
