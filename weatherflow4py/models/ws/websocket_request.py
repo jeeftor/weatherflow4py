@@ -1,4 +1,5 @@
 """Websocket Request Messages."""
+
 import json
 from abc import ABC, abstractmethod
 

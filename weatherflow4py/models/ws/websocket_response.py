@@ -4,6 +4,7 @@ Documentation form:
  - https://apidocs.tempestwx.com/reference/websocket-reference#lightning-strike-event
  - https://weatherflow.github.io/Tempest/api/ws.html
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
