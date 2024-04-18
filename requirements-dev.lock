@@ -5,7 +5,9 @@
 #   pre: false
 #   features: []
 #   all-features: false
-#   with-sources: false
+#   with-sources: true
+
+--index-url https://pypi.org/simple/
 
 -e file:.
 aiohttp==3.9.5

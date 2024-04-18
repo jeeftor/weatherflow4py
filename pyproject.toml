@@ -1,6 +1,6 @@
 [project]
 name = "weatherflow4py"
-version = "0.2.20"
+version = "0.20.0"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
 authors = [
     { name = "Jeef", email = "jeffstein@gmail.com" }
