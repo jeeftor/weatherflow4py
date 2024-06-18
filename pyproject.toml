@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "weatherflow4py"
-version = "0.2.20"
+version = "0.2.21"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
 authors = ["Jeef <jeeftor@users.noreply.github.com>"]
 readme = "README.md"

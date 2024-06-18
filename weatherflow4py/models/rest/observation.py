@@ -19,11 +19,11 @@ class WetBulbFlag(Enum):
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class Observation:
-    air_density: float
+                
     air_temperature: float
-    barometric_pressure: float
+
     brightness: int
-    delta_t: float
+
     dew_point: float
     feels_like: float
     heat_index: float
@@ -31,18 +31,28 @@ class Observation:
     precip: float
     pressure_trend: str
     relative_humidity: int
-    sea_level_pressure: float
+
     solar_radiation: int
-    station_pressure: float
+
     timestamp: int
     uv: float
-    wet_bulb_globe_temperature: float
-    wet_bulb_temperature: float
+
+
     wind_avg: float
     wind_chill: float
     wind_direction: int
     wind_gust: float
     wind_lull: float
+
+    # Optional Fields Discovered June 18
+    air_density: float | None = None
+    barometric_pressure: float | None = None
+    delta_t: float | None = None
+    sea_level_pressure: float | None = None
+    station_pressure: float | None = None
+    wet_bulb_globe_temperature: float | None = None
+    wet_bulb_temperature: float | None = None
+
 
     # Potentially optional fields based on test data - this may grow over time.
     precip_accum_last_1hr: float = field(default=0.0)
