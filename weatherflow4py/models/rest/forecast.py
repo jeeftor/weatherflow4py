@@ -279,9 +279,11 @@ class ForecastHourly:
             "humidity": self.relative_humidity,
             "native_apparent_temperature": self.feels_like,
             "native_precipitation": self.precip,
+            "native_pressure": self.sea_level_pressure,
             "native_temperature": self.air_temperature,
             "native_wind_gust_speed": int(self.wind_gust),
             "native_wind_speed": self.wind_avg,
+            "precipitation_probability": self.precip_probability,
             "uv_index": self.uv,
             "wind_bearing": self.wind_direction,
         }
