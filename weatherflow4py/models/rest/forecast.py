@@ -181,8 +181,8 @@ class CurrentConditions:
     wind_direction: float
     wind_direction_cardinal: WindDirection
     wind_gust: float
-    brightness: int | None = None
 
+    brightness: int | None = None
     station_pressure: float | None = None
     delta_t: float | None = None
     dew_point: float | None = None
