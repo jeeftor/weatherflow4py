@@ -116,6 +116,11 @@ def rest_station_json():
 def rest_stations_json():
     return load_fixture("fixtures/rest/stations/stations.json")
 
+@pytest.fixture
+def rest_stations_with_errors_json():
+    return load_fixture("fixtures/rest/stations/stations_with_errors.json")
+
+
 
 @pytest.fixture
 async def mock_aioresponse():

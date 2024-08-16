@@ -339,10 +339,13 @@ def test_obs_st(obs_st_json):
     assert obs_st.precipitation_analysis_type == PrecipitationAnalysisType.NONE
 
 
-def test_rest_stations_endpoint(rest_stations_json):
-    station_data = StationsResponseREST.from_dict(rest_stations_json)
+def test_rest_stations_endpoint(rest_stations_json, rest_stations_with_errors_json):
 
-    assert isinstance(station_data, StationsResponseREST)
+
+    station_data2 = StationsResponseREST.from_dict(rest_stations_with_errors_json)
+    station_data1 = StationsResponseREST.from_dict(rest_stations_json)
+    assert isinstance(station_data1, StationsResponseREST)
+    assert isinstance(station_data2, StationsResponseREST)
 
 
 def test_rest_station_endpoint(rest_station_json):

@@ -13,10 +13,11 @@ outputs = { self, nixpkgs, flake-utils, ... }:
         inherit system;
         overlays = [];
       };
-      pythonEnv = pkgs.python312.withPackages (ps: with ps; [        
-        
-        ps.pip # ensure pip exists        
+      pythonEnv = pkgs.python312.withPackages (ps: with ps; [
+
+        ps.pip # ensure pip exists
         ps.numpy # Numpy
+        uv
         # Include any additional Python packages here
       ]);
     in
@@ -24,16 +25,24 @@ outputs = { self, nixpkgs, flake-utils, ... }:
       devShell = pkgs.mkShell {
         buildInputs = [
           pythonEnv
-          pkgs.uv
-          pkgs.poetry
-          
+          pkgs.autoconf # Add autoconf here
+          pkgs.libjpeg_turbo # Add turbojpeg here
+          pkgs.ffmpeg
         ];
-         shellHook = ''
-          zsh
-          poetry install
-          poetry shell
+         shellHook = ''        
+        # Remove flake.nix and flake.lock from GIT
+        git restore --staged flake.nix
+        #git update-index --assume-unchanged flake.lock
+        #git update-index --no-skip-worktree flake.lock
+
+        
+        export DYLD_LIBRARY_PATH=${pkgs.libjpeg_turbo}/lib:$DYLD_LIBRARY_PATH
+        export STARSHIP_CONFIG=$(pwd)/starship.toml
+        python -m venv venv 
+        source venv/bin/activate 
+        ./script/setup
+
           '';
-        };      
+        };
     });
 }
-

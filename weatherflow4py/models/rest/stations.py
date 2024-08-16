@@ -1,7 +1,7 @@
 # models/unified_station.py
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Optional
 from dataclasses_json import dataclass_json
 
@@ -38,13 +38,13 @@ class Device:
 @dataclass_json
 @dataclass(frozen=True, order=True)
 class StationItem:
-    device_id: int
     item: str
     location_id: int
     location_item_id: int
     station_id: int
     station_item_id: int
     sort: Optional[int] = None
+    device_id: Optional[int] = field(default = -1)
 
 
 @dataclass_json
