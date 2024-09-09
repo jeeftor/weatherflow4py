@@ -1,3 +1,5 @@
+from typing import Optional
+
 import aiohttp
 
 from weatherflow4py.exceptions import TokenError
@@ -18,26 +20,30 @@ class WeatherFlowRestAPI:
 
     BASE_URL = "https://swd.weatherflow.com/swd/rest"
 
-    def __init__(self, api_token: str):
+    def __init__(self, api_token: str, session: Optional[aiohttp.ClientSession] = None):
         if not api_token:
             raise TokenError
 
         LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
         self.api_token = api_token
+        self.session = session
+        self._should_close_session = session is None
 
     async def __aenter__(self):
-        self.session = aiohttp.ClientSession(headers={"Accept": "application/json"})
+        if self.session is None:
+            self.session = aiohttp.ClientSession(headers={"Accept": "application/json"})
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.session.close()
+        if self._should_close_session and self.session:
+            await self.session.close()
 
     async def _make_request(
-        self, endpoint: str, params: dict = None, response_model=None
+            self, endpoint: str, params: dict = None, response_model=None
     ):
         if self.session is None:
             raise RuntimeError(
-                "Session is not initialized. Use the async with statement."
+                "Session is not initialized. Use the async with statement or provide a session."
             )
 
         url = URL(f"{self.BASE_URL}/{endpoint}")
@@ -174,3 +180,15 @@ class WeatherFlowRestAPI:
             )
 
         return ret
+
+
+    @classmethod
+    async def create(cls, api_token: str, session: Optional[aiohttp.ClientSession] = None):
+        api = cls(api_token, session)
+        if api.session is None:
+            api.session = aiohttp.ClientSession(headers={"Accept": "application/json"})
+        return api
+
+    async def close(self):
+        if self._should_close_session and self.session:
+            await self.session.close()
