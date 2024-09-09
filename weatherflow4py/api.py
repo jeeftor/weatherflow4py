@@ -26,26 +26,27 @@ class WeatherFlowRestAPI:
 
         REST_LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
         self.api_token = api_token
-        self.session = session
-        self._should_close_session = session is None
+        self._session = session
+        self._owned_session = None
+
+    @property
+    def session(self):
+        if self._session is None:
+            if self._owned_session is None:
+                self._owned_session = aiohttp.ClientSession(headers={"Accept": "application/json"})
+            return self._owned_session
+        return self._session
 
     async def __aenter__(self):
-        if self.session is None:
-            self.session = aiohttp.ClientSession(headers={"Accept": "application/json"})
         return self
 
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self._should_close_session and self.session:
-            await self.session.close()
+        # Do not close the session here
+        pass
 
     async def _make_request(
             self, endpoint: str, params: dict = None, response_model=None
     ):
-        if self.session is None:
-            raise RuntimeError(
-                "Session is not initialized. Use the async with statement or provide a session."
-            )
-
         url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
         full_url = url.with_query(full_params)
@@ -184,11 +185,9 @@ class WeatherFlowRestAPI:
 
     @classmethod
     async def create(cls, api_token: str, session: Optional[aiohttp.ClientSession] = None):
-        api = cls(api_token, session)
-        if api.session is None:
-            api.session = aiohttp.ClientSession(headers={"Accept": "application/json"})
-        return api
+        return cls(api_token, session)
 
     async def close(self):
-        if self._should_close_session and self.session:
-            await self.session.close()
+        if self._owned_session:
+            await self._owned_session.close()
+            self._owned_session = None
