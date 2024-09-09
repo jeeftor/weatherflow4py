@@ -3,7 +3,7 @@ from enum import Enum
 from typing import List
 from dataclasses_json import dataclass_json, Undefined, CatchAll
 
-from weatherflow4py.const import LOGGER
+from weatherflow4py.const import BASE_LOGGER
 from weatherflow4py.models.rest.forecast import WindDirection
 
 
@@ -167,7 +167,7 @@ class StationStatus:
             self.status_message
             == "SUCCESS - Either no capabilities or no recent observations"
         ):
-            LOGGER.debug(
+            BASE_LOGGER.debug(
                 "No Capabilities or Recent Observations - Station may be offline"
             )
 

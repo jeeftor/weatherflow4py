@@ -17,7 +17,7 @@ from weatherflow4py.models.ws.websocket_response import (
     RapidWindWS,
 )
 
-from .const import LOGGER
+from .const import WS_LOGGER
 
 
 class WeatherFlowWebsocketAPI:
@@ -30,7 +30,7 @@ class WeatherFlowWebsocketAPI:
         self.listen_task = None  # To keep track of the listening task
         self.callbacks = {}
 
-        LOGGER.debug("WebsocketAPI initialized with URI: " + self.uri)
+        WS_LOGGER.debug("WebsocketAPI initialized with URI: " + self.uri)
 
     def _register_callback(
         self, message_type: EventType, callback: Callable[[str], None]
@@ -149,7 +149,7 @@ class WeatherFlowWebsocketAPI:
 
     async def send_message(self, message_type: WebsocketRequest):
         message = message_type.json
-        LOGGER.debug(f"Sending message: {message}")
+        WS_LOGGER.debug(f"Sending message: {message}")
         await self._send(message)
 
     async def connect(self):
@@ -163,7 +163,7 @@ class WeatherFlowWebsocketAPI:
         self.is_listening = True
         try:
             async for message in self.websocket:
-                LOGGER.debug(f"Received message: {message}")
+                WS_LOGGER.debug(f"Received message: {message}")
                 data = json.loads(message)
                 try:
                     response = WebsocketResponseBuilder.build_response(data)
@@ -171,19 +171,19 @@ class WeatherFlowWebsocketAPI:
 
                     if data["type"] in self.callbacks:
                         if asyncio.iscoroutinefunction(self.callbacks[data["type"]]):
-                            LOGGER.debug(
+                            WS_LOGGER.debug(
                                 f"Calling ASYNC callback for message type: {data['type']}"
                             )
                             # If it is, use 'await' to call it
                             await self.callbacks[data["type"]](response)
                         else:
-                            LOGGER.debug(
+                            WS_LOGGER.debug(
                                 f"Calling SYNC callback for message type: {data['type']}"
                             )
                             # If it's not, call it normally
                             self.callbacks[data["type"]](response)
                     else:
-                        LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
+                        WS_LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
                 except ValueError:
                     if EventType.INVALID.value in self.callbacks:
                         if asyncio.iscoroutinefunction(

@@ -8,7 +8,7 @@ from weatherflow4py.models.rest.forecast import WeatherDataForecastREST
 from weatherflow4py.models.rest.observation import ObservationStationREST
 from weatherflow4py.models.rest.stations import StationsResponseREST
 from weatherflow4py.models.rest.unified import WeatherFlowDataREST
-from .const import LOGGER
+from .const import REST_LOGGER
 
 from yarl import URL
 
@@ -24,7 +24,7 @@ class WeatherFlowRestAPI:
         if not api_token:
             raise TokenError
 
-        LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
+        REST_LOGGER.debug(f"Initializing the WeatherFlow API with token {api_token}")
         self.api_token = api_token
         self.session = session
         self._should_close_session = session is None
@@ -50,20 +50,20 @@ class WeatherFlowRestAPI:
         full_params = {"token": self.api_token, **(params or {})}
         full_url = url.with_query(full_params)
 
-        LOGGER.debug(f"Making request to {full_url}")
+        REST_LOGGER.debug(f"Making request to {full_url}")
 
         async with self.session.get(url, params=full_params) as response:
             response.raise_for_status()
             data = await response.text()
 
-            LOGGER.debug(f"Received response: {data}")
+            REST_LOGGER.debug(f"Received response: {data}")
 
         try:
             return response_model.from_json(data) if response_model else None
         except Exception as e:
             error_msg = f"Unable to convert data || {data} || to || {response_model} -- {str(e)}"
             print(error_msg)
-            LOGGER.error(error_msg)
+            REST_LOGGER.error(error_msg)
             raise e
 
     async def async_get_stations(self) -> StationsResponseREST:
