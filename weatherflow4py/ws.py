@@ -2,6 +2,9 @@ import time
 from collections.abc import Callable
 
 import asyncio
+from ssl import SSLContext
+from typing import Optional
+
 import websockets
 import json
 
@@ -152,8 +155,16 @@ class WeatherFlowWebsocketAPI:
         WS_LOGGER.debug(f"Sending message: {message}")
         await self._send(message)
 
-    async def connect(self):
-        self.websocket = await websockets.connect(self.uri)
+    async def connect(self, ssl_context: Optional[SSLContext] = None):
+        """Establishes a WebSocket connection and starts a background listening task.
+
+           :param ssl_context: Optional SSL context for secure connections
+        """
+        if ssl_context is None:
+            self.websocket = await websockets.connect(self.uri)
+        else:
+            self.websocket = await websockets.connect(self.uri, ssl=ssl_context)
+
         # Run the listen method in the background and name the task for easier debugging
         self.listen_task = asyncio.create_task(
             self.listen(), name="WebSocketListenTask"
