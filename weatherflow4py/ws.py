@@ -206,7 +206,7 @@ class WeatherFlowWebsocketAPI:
                             # If it's not, call it normally
                             self.callbacks[EventType.INVALID.value](data)
                     else:
-                        print(f"INVALID:\n {message}")
+                        WS_LOGGER.warning(f"Unrecognized WS Message: {message}")
 
                     continue
 
