@@ -40,7 +40,7 @@ async def main():
                 print(obs.obs[0].air_temperature)
 
                 device_obs = await api.async_get_device_observations(
-                    station.outdoor_devices[0].device_id
+                    station.outdoor_devices[0].device_ids
                 )
                 print(device_obs.precipitation_type)
             await asyncio.sleep(5)

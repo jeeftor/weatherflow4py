@@ -29,7 +29,7 @@ class WeatherFlowWebsocketAPI:
     def __init__(self, access_token: str, device_ids=None):
         if device_ids is None:
             device_ids = []
-        self.device_id = device_ids
+        self.device_ids = device_ids
         self.uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"
         self.websocket = None
         self.messages = {}
@@ -226,10 +226,10 @@ class WeatherFlowWebsocketAPI:
         return self.websocket and not self.websocket.closed
 
     async def close(self):
-        for device_id in self.device_id:
+        for device_id in self.device_ids:
             await asyncio.gather(
-                self.send_message(ListenStopMessage(device_id=self.device_id)),
-                self.send_message(RapidWindListenStopMessage(device_id=self.device_id))
+                self.send_message(ListenStopMessage(device_id=self.device_ids)),
+                self.send_message(RapidWindListenStopMessage(device_id=self.device_ids))
             )
         if self.websocket:
             await self.websocket.close()
