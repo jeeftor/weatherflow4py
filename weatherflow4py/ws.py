@@ -24,8 +24,12 @@ from .const import WS_LOGGER
 
 
 class WeatherFlowWebsocketAPI:
-    def __init__(self, device_id: str, access_token: str):
-        self.device_id = device_id
+    """Websocket API For Weatherflow Devices."""
+
+    def __init__(self, access_token: str, device_ids=None):
+        if device_ids is None:
+            device_ids = []
+        self.device_id = device_ids
         self.uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"
         self.websocket = None
         self.messages = {}
@@ -69,7 +73,7 @@ class WeatherFlowWebsocketAPI:
             def wind_callback(data: RapidWindWS):
                 print("Received wind data:", data)
 
-            api = WebsocketAPI(device_id, access_token)
+            api = WebsocketAPI(access_token, device_id )
             api.register_wind_callback(wind_callback)
 
         Args:
@@ -87,7 +91,7 @@ class WeatherFlowWebsocketAPI:
             def rain_callback(data: str):
                 print("Received rain data:", data)
 
-            api = WebsocketAPI(device_id, access_token)
+            api = WebsocketAPI(access_token, [device_id1, device_id2])
             api.register_precipitation_callback(rain_callback)
 
         Args:
@@ -105,7 +109,7 @@ class WeatherFlowWebsocketAPI:
             def lightning_callback(data: str):
                 print("Received lightning data:", data)
 
-            api = WebsocketAPI(device_id, access_token)
+            api = WebsocketAPI(access_token, [device_id1, device_id2])
             api.register_lightning_callback(lightning_callback)
 
         Args:
@@ -125,7 +129,7 @@ class WeatherFlowWebsocketAPI:
             def observation_callback(data: ObservationTempestWS):
                 print("Received observation data:", data)
 
-            api = WebsocketAPI(device_id, access_token)
+            api = WebsocketAPI(access_token)
             api.register_observation_callback(observation_callback)
 
         Args:
@@ -222,9 +226,11 @@ class WeatherFlowWebsocketAPI:
         return self.websocket and not self.websocket.closed
 
     async def close(self):
-        await self.send_message(ListenStopMessage(device_id=self.device_id))
-        await self.send_message(RapidWindListenStopMessage(device_id=self.device_id))
-
+        for device_id in self.device_id:
+            await asyncio.gather(
+                self.send_message(ListenStopMessage(device_id=self.device_id)),
+                self.send_message(RapidWindListenStopMessage(device_id=self.device_id))
+            )
         if self.websocket:
             await self.websocket.close()
             self.websocket = None

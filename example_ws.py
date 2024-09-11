@@ -38,7 +38,7 @@ async def main():
     token = os.getenv("TOKEN")
     device = os.getenv("DEVICE")
 
-    api = WeatherFlowWebsocketAPI(device, token)
+    api = WeatherFlowWebsocketAPI(token, device)
     # api._register_callback(EventType.INVALID, invalid_data_cb)
     api.register_observation_callback(obs_cb)
     api.register_wind_callback(wind_cb)

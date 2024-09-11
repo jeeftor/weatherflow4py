@@ -72,6 +72,20 @@ class Observation:
     lightning_strike_last_epoch: int | None = field(default=None)
 
     @property
+    def precip_accum_local_day_nearcast(self) -> float:
+        """Alias for nearcast"""
+        return self.precip_accum_local_day_final
+    @property
+    def precip_accum_local_yesterday_nearcast(self) -> float:
+        """Alias for nearcast"""
+        return self.precip_accum_local_yesterday_final
+
+    @property
+    def precip_minutes_local_yesterday_nearcast(self) -> float:
+        """Alias for nearcast"""
+        return self.precip_minutes_local_yesterday_final
+
+    @property
     def wind_cardinal_direction(self) -> str:
         dirs = [
             WindDirection.N,
