@@ -22,6 +22,10 @@ class BaseResponseWS:
     type: str
     unknown_fields: CatchAll
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.__dict__ == other.__dict__
 
 @dataclass_json
 @dataclass
@@ -67,12 +71,24 @@ class EventDataRapidWind:
         ix = round(self.wind_direction_degrees / (360.0 / len(dirs)))
         return dirs[ix % len(dirs)]
 
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.__dict__ == other.__dict__
+
+
 
 @dataclass
 class EventDataLightningStrike:
     epoch: int
     distance_km: int
     energy: int
+
+
+    def __eq__(self, other):
+        if not isinstance(other, self.__class__):
+            return NotImplemented
+        return self.__dict__ == other.__dict__
 
 
 @dataclass_json
