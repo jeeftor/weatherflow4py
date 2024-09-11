@@ -103,3 +103,21 @@ class Stations:
 class StationsResponseREST:
     stations: list[Stations]
     status: Status
+
+
+    @property
+    def station_map(self) -> dict[int, Stations]:
+        """Return a dictionary of stations."""
+        return {station.station_id: station for station in self.stations}
+
+    @property
+    def station_device_map(self) -> dict[int: list[int]]:
+        """Return a dictionary of station_id to list of device_ids."""
+        return {station.station_id: [device.device_id for device in station.devices] for station in self.stations}
+
+    @property
+    def station_outdoor_device_map(self) -> dict[int: list[int]]:
+        """Return a dictionary of station_id to list of outdoor device_ids."""
+        return {station.station_id: [device.device_id for device in station.outdoor_devices] for station in self.stations}
+
+

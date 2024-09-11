@@ -348,6 +348,12 @@ def test_rest_stations_endpoint(rest_stations_json, rest_stations_with_errors_js
     assert isinstance(station_data2, StationsResponseREST)
 
 
+    assert station_data1.station_device_map ==  {24432: [7654321, 123456]}
+    assert station_data2.station_outdoor_device_map == {32364: [101382]}
+
+
+
+
 def test_rest_station_endpoint(rest_station_json):
     station_data = StationsResponseREST.from_dict(rest_station_json)
     assert isinstance(station_data, StationsResponseREST)
