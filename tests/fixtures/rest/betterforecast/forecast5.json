@@ -190,7 +190,6 @@
         "relative_humidity": 50,
         "sea_level_pressure": 1021.3,
         "time": 1703786400,
-        "uv": 4.0,
         "wind_avg": 8.0,
         "wind_direction": 350,
         "wind_direction_cardinal": "N",

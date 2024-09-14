@@ -275,6 +275,9 @@ def test_convert_json_to_weather_data5(rest_betterforecast_5):
     assert isinstance(weather_data.timezone, str)
     assert isinstance(weather_data.timezone_offset_minutes, int)
     assert isinstance(weather_data.units, ForecastUnits)
+    assert weather_data.forecast.hourly[0].uv is None
+    assert weather_data.forecast.hourly[0].feels_like is None
+
 
 
 

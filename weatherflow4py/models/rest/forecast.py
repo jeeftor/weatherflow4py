@@ -264,19 +264,7 @@ class ForecastHourly:
     wind_direction: float
     wind_gust: float
     feels_like: float | None = None
-    feels_like_source: str = "unknown"
-    uv: float = -1
-
-    def __post_init__(self):
-        if self.feels_like is None:
-            REST_LOGGER.debug("Using air temperature for feels_like")
-            object.__setattr__(self, 'feels_like', self.air_temperature)
-            object.__setattr__(self, 'air_temperature',  self.feels_like_source)
-        else:
-            object.__setattr__(self, 'feels_like',  self.feels_like_source)
-
-
-
+    uv: float | None = None
 
     @property
     def rfc3939_datetime(self):
