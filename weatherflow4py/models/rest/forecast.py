@@ -259,13 +259,13 @@ class ForecastHourly:
     relative_humidity: int
     sea_level_pressure: float
     time: int
-    uv: float
     wind_avg: float
     wind_direction_cardinal: WindDirection
     wind_direction: float
     wind_gust: float
     feels_like: float | None = None
     feels_like_source: str = "unknown"
+    uv: float = -1
 
     def __post_init__(self):
         if self.feels_like is None:
