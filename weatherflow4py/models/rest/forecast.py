@@ -6,6 +6,8 @@ from typing import List
 from dataclasses_json import dataclass_json
 from enum import Enum
 
+from weatherflow4py.const import REST_LOGGER
+
 
 class Condition(Enum):
     CLEAR = "Clear"
@@ -248,7 +250,6 @@ class ForecastDaily:
 class ForecastHourly:
     air_temperature: float
     conditions: Condition
-    feels_like: float
     icon: Icon
     local_day: int
     local_hour: int
@@ -263,6 +264,19 @@ class ForecastHourly:
     wind_direction_cardinal: WindDirection
     wind_direction: float
     wind_gust: float
+    feels_like: float | None = None
+    feels_like_source: str = "unknown"
+
+    def __post_init__(self):
+        if self.feels_like is None:
+            REST_LOGGER.debug("Using air temperature for feels_like")
+            object.__setattr__(self, 'feels_like', self.air_temperature)
+            object.__setattr__(self, 'air_temperature',  self.feels_like_source)
+        else:
+            object.__setattr__(self, 'feels_like',  self.feels_like_source)
+
+
+
 
     @property
     def rfc3939_datetime(self):
