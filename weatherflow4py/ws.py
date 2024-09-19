@@ -5,7 +5,7 @@ import time
 from collections.abc import Callable, Awaitable
 from ssl import SSLContext
 from typing import Any, TypedDict, NotRequired
-
+from weatherflow4py.models.ws.types import EventType
 import websockets
 
 from weatherflow4py.models.ws.types import EventType
@@ -125,27 +125,41 @@ class WeatherFlowWebsocketAPI:
             self._closed.set()
             WS_LOGGER.debug("WebSocket listener stopped")
 
+
+
+
+
+
+
+
     async def process_message(self, message: str) -> None:
         try:
-            data: MessageDict = json.loads(message)
-            match data:
-                case {"type": str(message_type), "data": dict() as message_data}:
-                    response = await WebsocketResponseBuilder.build_response(message_data)
-                    self.messages[message_type] = response
+            data: dict = json.loads(message)
 
-                    if callback := self.callbacks.get(message_type):
-                        WS_LOGGER.debug("Calling callback for message type: %s", message_type)
-                        await self._execute_callback(callback, response)
-                    else:
-                        WS_LOGGER.debug("No callback for message type: %s", message_type)
-                case _:
-                    raise ValueError("Unrecognized message format")
+            try:
+                response = WebsocketResponseBuilder.build_response(data)
+            except ValueError as e:
+                WS_LOGGER.warning(f"Unrecognized or invalid message: {e}")
+                return
+
+            event_type = EventType(data.get("type", "unknown"))
+
+            self.messages[event_type.value] = response
+
+            if callback := self.callbacks.get(event_type.value):
+                WS_LOGGER.debug(f"Calling callback for message type: {event_type.value}")
+                await self._execute_callback(callback, response)
+            else:
+                WS_LOGGER.debug(f"No callback registered for message type: {event_type.value}")
+
         except json.JSONDecodeError as e:
-            WS_LOGGER.error("JSON decode error: %s", e)
-        except ValueError:
-            await self._handle_invalid_message(message)
+            WS_LOGGER.error(f"JSON decode error: {e}")
         except Exception as e:
-            WS_LOGGER.error("Error processing message: %s", e)
+            WS_LOGGER.error(f"Error processing message: {e}")
+
+
+
+
 
     async def _execute_callback(self, callback: Callable[[Any], None] | Callable[[Any], Awaitable[None]], data: Any) -> None:
         if asyncio.iscoroutinefunction(callback):
