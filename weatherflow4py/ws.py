@@ -225,27 +225,15 @@ class WeatherFlowWebsocketAPI:
         # Check if the websocket connection is open
         return self.websocket and not self.websocket.closed
 
+
     async def close(self):
         """Close the WebSocket connection and stop the listening task."""
-        if self.listen_task:
-            WS_LOGGER.debug("Cancelling WebSocket listening task")
-            self.listen_task.cancel()  # Cancel the listening task first
-            try:
-                # Wait for the task to be cancelled with a timeout
-                await asyncio.wait_for(self.listen_task, timeout=5.0)
-            except (asyncio.CancelledError, asyncio.TimeoutError):
-                WS_LOGGER.debug("WebSocket listening task cancelled or timed out")
+        WS_LOGGER.debug("Closing WebSocket connection")
 
-        try:
-            for device_id in self.device_ids:
-                WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
-                await asyncio.gather(
-                    self.send_message(ListenStopMessage(device_id=device_id)),
-                    self.send_message(RapidWindListenStopMessage(device_id=device_id))
-                )
-        except Exception as e:
-            WS_LOGGER.error(f"Error sending stop messages: {e}")
+        # First, set a flag to indicate we're closing
+        self.is_closing = True
 
+        # Close the WebSocket connection immediately
         if self.websocket:
             try:
                 await self.websocket.close()
@@ -254,4 +242,35 @@ class WeatherFlowWebsocketAPI:
             finally:
                 self.websocket = None
 
-        self.listen_task = None
+        # Cancel the listen task
+        if self.listen_task:
+            WS_LOGGER.debug("Cancelling WebSocket listening task")
+            self.listen_task.cancel()
+            try:
+                # Wait for the task to be cancelled with a timeout
+                await asyncio.wait_for(asyncio.shield(self.listen_task), timeout=5.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                WS_LOGGER.debug("WebSocket listening task cancelled or timed out")
+            except Exception as e:
+                WS_LOGGER.error(f"Error cancelling listen task: {e}")
+            finally:
+                self.listen_task = None
+
+        # Attempt to send stop messages, but don't wait if it fails
+        for device_id in self.device_ids:
+            WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
+            try:
+                await asyncio.wait_for(
+                    asyncio.gather(
+                        self.send_message(ListenStopMessage(device_id=device_id)),
+                        self.send_message(RapidWindListenStopMessage(device_id=device_id))
+                    ),
+                    timeout=2.0
+                )
+            except asyncio.TimeoutError:
+                WS_LOGGER.warning(f"Timeout sending stop messages for device_id: {device_id}")
+            except Exception as e:
+                WS_LOGGER.error(f"Error sending stop messages for device_id {device_id}: {e}")
+
+        self.is_closing = False
+        WS_LOGGER.debug("WebSocket connection closed")
