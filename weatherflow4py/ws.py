@@ -241,6 +241,6 @@ class WeatherFlowWebsocketAPI:
             self.listen_task.cancel()  # Cancel the listening task
             try:
                 await self.listen_task  # Await the task to handle cancellation
-            except asyncio.CancelledError:
-                WS_LOGGER.error("Unable to close WebSocket connection")
+            except asyncio.CancelledError as err:
+                WS_LOGGER.debug(f"Unable to close WebSocket connection: {err}")
                 pass  # Task cancellation is expected
