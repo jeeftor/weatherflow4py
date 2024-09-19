@@ -225,33 +225,33 @@ class WeatherFlowWebsocketAPI:
         # Check if the websocket connection is open
         return self.websocket and not self.websocket.closed
 
-async def close(self):
-    """Close the WebSocket connection and stop the listening task."""
-    if self.listen_task:
-        WS_LOGGER.debug("Cancelling WebSocket listening task")
-        self.listen_task.cancel()  # Cancel the listening task first
-        try:
-            # Wait for the task to be cancelled with a timeout
-            await asyncio.wait_for(self.listen_task, timeout=5.0)
-        except (asyncio.CancelledError, asyncio.TimeoutError):
-            WS_LOGGER.debug("WebSocket listening task cancelled or timed out")
+    async def close(self):
+        """Close the WebSocket connection and stop the listening task."""
+        if self.listen_task:
+            WS_LOGGER.debug("Cancelling WebSocket listening task")
+            self.listen_task.cancel()  # Cancel the listening task first
+            try:
+                # Wait for the task to be cancelled with a timeout
+                await asyncio.wait_for(self.listen_task, timeout=5.0)
+            except (asyncio.CancelledError, asyncio.TimeoutError):
+                WS_LOGGER.debug("WebSocket listening task cancelled or timed out")
 
-    try:
-        for device_id in self.device_ids:
-            WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
-            await asyncio.gather(
-                self.send_message(ListenStopMessage(device_id=device_id)),
-                self.send_message(RapidWindListenStopMessage(device_id=device_id))
-            )
-    except Exception as e:
-        WS_LOGGER.error(f"Error sending stop messages: {e}")
-
-    if self.websocket:
         try:
-            await self.websocket.close()
+            for device_id in self.device_ids:
+                WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
+                await asyncio.gather(
+                    self.send_message(ListenStopMessage(device_id=device_id)),
+                    self.send_message(RapidWindListenStopMessage(device_id=device_id))
+                )
         except Exception as e:
-            WS_LOGGER.error(f"Error closing WebSocket: {e}")
-        finally:
-            self.websocket = None
+            WS_LOGGER.error(f"Error sending stop messages: {e}")
 
-    self.listen_task = None
+        if self.websocket:
+            try:
+                await self.websocket.close()
+            except Exception as e:
+                WS_LOGGER.error(f"Error closing WebSocket: {e}")
+            finally:
+                self.websocket = None
+
+        self.listen_task = None
