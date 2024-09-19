@@ -37,9 +37,13 @@ class WeatherFlowWebsocketAPI:
         self.listen_task = None  # To keep track of the listening task
         self.callbacks = {}
 
+        # Closing support events
+        self._closing = asyncio.Event()
+        self._closed = asyncio.Event()
+
         WS_LOGGER.debug("WebsocketAPI initialized with URI: " + self.uri)
 
-    def _register_callback(
+    def register_callback(
         self, message_type: EventType, callback: Callable[[str], None]
     ):
         """Register a callback for a specific message type"""
@@ -159,6 +163,7 @@ class WeatherFlowWebsocketAPI:
         WS_LOGGER.debug(f"Sending message: {message}")
         await self._send(message)
 
+
     async def connect(self, ssl_context: Optional[SSLContext] = None):
         """Establishes a WebSocket connection and starts a background listening task.
 
@@ -177,100 +182,112 @@ class WeatherFlowWebsocketAPI:
     async def listen(self):
         self.is_listening = True
         try:
-            async for message in self.websocket:
-                WS_LOGGER.debug(f"Received message: {message}")
-                data = json.loads(message)
+            while not self._closing.is_set():
                 try:
-                    response = WebsocketResponseBuilder.build_response(data)
-                    self.messages[data["type"]] = response
-
-                    if data["type"] in self.callbacks:
-                        if asyncio.iscoroutinefunction(self.callbacks[data["type"]]):
-                            WS_LOGGER.debug(
-                                f"Calling ASYNC callback for message type: {data['type']}"
-                            )
-                            # If it is, use 'await' to call it
-                            await self.callbacks[data["type"]](response)
-                        else:
-                            WS_LOGGER.debug(
-                                f"Calling SYNC callback for message type: {data['type']}"
-                            )
-                            # If it's not, call it normally
-                            self.callbacks[data["type"]](response)
-                    else:
-                        WS_LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
-                except ValueError:
-                    if EventType.INVALID.value in self.callbacks:
-                        if asyncio.iscoroutinefunction(
-                            self.callbacks[EventType.INVALID.value]
-                        ):
-                            # If it is, use 'await' to call it
-                            await self.callbacks[EventType.INVALID.value](data)
-                        else:
-                            # If it's not, call it normally
-                            self.callbacks[EventType.INVALID.value](data)
-                    else:
-                        WS_LOGGER.warning(f"Unrecognized WS Message: {message}")
-
+                    message = await asyncio.wait_for(self.websocket.recv(), timeout=1.0)
+                    WS_LOGGER.debug(f"Received message: {message}")
+                    await self.process_message(message)
+                except asyncio.TimeoutError:
+                    continue  # Allow checking the closing flag
+                except websockets.ConnectionClosed:
+                    if not self._closing.is_set():
+                        WS_LOGGER.error("WebSocket connection closed unexpectedly")
+                    break
+                except json.JSONDecodeError as e:
+                    WS_LOGGER.error(f"JSON decode error: {e}")
                     continue
-
+                except Exception as e:
+                    if not self._closing.is_set():
+                        WS_LOGGER.error(f"Error in WebSocket listener: {e}")
+                    break
         finally:
             self.is_listening = False
+            self._closed.set()
+            WS_LOGGER.debug("WebSocket listener stopped")
+
+    async def process_message(self, message: str):
+        try:
+            data = json.loads(message)
+            response = WebsocketResponseBuilder.build_response(data)
+            self.messages[data["type"]] = response
+
+            if data["type"] in self.callbacks:
+                callback = self.callbacks[data["type"]]
+                if asyncio.iscoroutinefunction(callback):
+                    WS_LOGGER.debug(f"Calling ASYNC callback for message type: {data['type']}")
+                    await callback(response)
+                else:
+                    WS_LOGGER.debug(f"Calling SYNC callback for message type: {data['type']}")
+                    callback(response)
+            else:
+                WS_LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
+        except ValueError:
+            if EventType.INVALID.value in self.callbacks:
+                invalid_callback = self.callbacks[EventType.INVALID.value]
+                if asyncio.iscoroutinefunction(invalid_callback):
+                    await invalid_callback(data)
+                else:
+                    invalid_callback(data)
+            else:
+                WS_LOGGER.warning(f"Unrecognized WS Message: {message}")
+
 
     async def _send(self, message):
         if self.websocket:
             await self.websocket.send(message)
 
-    def is_connected(self):
+    def is_connected(self) -> bool:
         # Check if the websocket connection is open
-        return self.websocket and not self.websocket.closed
-
+        return self.websocket and not self.websocket.closed and not self._closing.is_set()
 
     async def close(self):
         """Close the WebSocket connection and stop the listening task."""
         WS_LOGGER.debug("Closing WebSocket connection")
 
-        # First, set a flag to indicate we're closing
-        self.is_closing = True
+        if self._closing.is_set():
+            WS_LOGGER.debug("Close already in progress")
+            await self._closed.wait()
+            return
 
-        # Close the WebSocket connection immediately
-        if self.websocket:
-            try:
-                await self.websocket.close()
-            except Exception as e:
-                WS_LOGGER.error(f"Error closing WebSocket: {e}")
-            finally:
-                self.websocket = None
+        self._closing.set()
 
-        # Cancel the listen task
-        if self.listen_task:
-            WS_LOGGER.debug("Cancelling WebSocket listening task")
-            self.listen_task.cancel()
-            try:
-                # Wait for the task to be cancelled with a timeout
-                await asyncio.wait_for(asyncio.shield(self.listen_task), timeout=5.0)
-            except (asyncio.CancelledError, asyncio.TimeoutError):
-                WS_LOGGER.debug("WebSocket listening task cancelled or timed out")
-            except Exception as e:
-                WS_LOGGER.error(f"Error cancelling listen task: {e}")
-            finally:
-                self.listen_task = None
+        try:
+            # Attempt to send stop messages first
+            for device_id in self.device_ids:
+                WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
+                try:
+                    await asyncio.wait_for(
+                        asyncio.gather(
+                            self.send_message(ListenStopMessage(device_id=device_id)),
+                            self.send_message(RapidWindListenStopMessage(device_id=device_id))
+                        ),
+                        timeout=2.0
+                    )
+                except asyncio.TimeoutError:
+                    WS_LOGGER.warning(f"Timeout sending stop messages for device_id: {device_id}")
+                except Exception as e:
+                    WS_LOGGER.error(f"Error sending stop messages for device_id {device_id}: {e}")
 
-        # Attempt to send stop messages, but don't wait if it fails
-        for device_id in self.device_ids:
-            WS_LOGGER.debug(f"Unregistering Websocket Listener for device_id: {device_id}")
-            try:
-                await asyncio.wait_for(
-                    asyncio.gather(
-                        self.send_message(ListenStopMessage(device_id=device_id)),
-                        self.send_message(RapidWindListenStopMessage(device_id=device_id))
-                    ),
-                    timeout=2.0
-                )
-            except asyncio.TimeoutError:
-                WS_LOGGER.warning(f"Timeout sending stop messages for device_id: {device_id}")
-            except Exception as e:
-                WS_LOGGER.error(f"Error sending stop messages for device_id {device_id}: {e}")
+            # Close the WebSocket connection
+            if self.websocket:
+                try:
+                    await self.websocket.close()
+                except Exception as e:
+                    WS_LOGGER.error(f"Error closing WebSocket: {e}")
+                finally:
+                    self.websocket = None
 
-        self.is_closing = False
-        WS_LOGGER.debug("WebSocket connection closed")
+            # Wait for the listen task to complete
+            if self.listen_task:
+                try:
+                    await asyncio.wait_for(self.listen_task, timeout=5.0)
+                except asyncio.TimeoutError:
+                    WS_LOGGER.warning("Timeout waiting for listen task to complete")
+                except Exception as e:
+                    WS_LOGGER.error(f"Error waiting for listen task to complete: {e}")
+                finally:
+                    self.listen_task = None
+
+        finally:
+            await self._closed.wait()
+            WS_LOGGER.debug("WebSocket connection closed")
