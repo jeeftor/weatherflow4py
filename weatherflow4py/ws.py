@@ -28,6 +28,7 @@ class WeatherFlowWebsocketAPI:
     """Websocket API For Weatherflow Devices."""
 
     _shared_websocket = None  # Class variable for the WebSocket connection
+    _lock = asyncio.Lock()  # Async lock for websocket initialzation
 
     def __init__(self, access_token: str, device_ids=None):
         if device_ids is None:
@@ -205,26 +206,27 @@ class WeatherFlowWebsocketAPI:
 
         :param ssl_context: Optional SSL context for secure connections
         """
-        if WeatherFlowWebsocketAPI._shared_websocket is None:
-            if ssl_context is None:
-                WeatherFlowWebsocketAPI._shared_websocket = await websockets.connect(
-                    self.uri
-                )
-            else:
-                WeatherFlowWebsocketAPI._shared_websocket = await websockets.connect(
-                    self.uri, ssl=ssl_context
+        async with WeatherFlowWebsocketAPI._lock:
+            if WeatherFlowWebsocketAPI._shared_websocket is None:
+                if ssl_context is None:
+                    WeatherFlowWebsocketAPI._shared_websocket = (
+                        await websockets.connect(self.uri)
+                    )
+                else:
+                    WeatherFlowWebsocketAPI._shared_websocket = (
+                        await websockets.connect(self.uri, ssl=ssl_context)
+                    )
+
+                WS_LOGGER.debug(
+                    f"WebSocket connected at memory address: {id(WeatherFlowWebsocketAPI._shared_websocket)}"
                 )
 
-            WS_LOGGER.info(
-                f"WebSocket connected at memory address: {id(WeatherFlowWebsocketAPI._shared_websocket)}"
+            self.websocket = WeatherFlowWebsocketAPI._shared_websocket
+
+            # Run the listen method in the background and name the task for easier debugging
+            self.listen_task = asyncio.create_task(
+                self.listen(), name="WebSocketListenTask"
             )
-
-        self.websocket = WeatherFlowWebsocketAPI._shared_websocket
-
-        # Run the listen method in the background and name the task for easier debugging
-        self.listen_task = asyncio.create_task(
-            self.listen(), name="WebSocketListenTask"
-        )
 
     async def listen(self):
         self.is_listening = True
@@ -296,7 +298,7 @@ class WeatherFlowWebsocketAPI:
             for task in stop_tasks:
                 await task
 
-        WS_LOGGER.info("Stopped listening for all devices")
+        WS_LOGGER.debug("Stopped listening for all devices 🙉️")
 
     async def close(self, timeout: float = 5.0) -> None:
         """
@@ -318,13 +320,13 @@ class WeatherFlowWebsocketAPI:
             except asyncio.TimeoutError:
                 WS_LOGGER.warning("Listen task cancellation timed out")
             except asyncio.CancelledError:
-                WS_LOGGER.info("Listen task was cancelled")
+                WS_LOGGER.debug("Listen task was cancelled")
             except Exception as e:
                 WS_LOGGER.error(f"Exception during listen task cancellation: {e}")
 
         # Close the WebSocket connection
         if self.websocket:
-            WS_LOGGER.info(
+            WS_LOGGER.debug(
                 f"Attempting to close WebSocket at memory address: {id(self.websocket)}"
             )
             try:
@@ -335,10 +337,10 @@ class WeatherFlowWebsocketAPI:
                 WS_LOGGER.error(f"Exception during WebSocket close operation: {e}")
             finally:
                 if self.websocket.closed:
-                    WS_LOGGER.info("WebSocket connection successfully closed")
+                    WS_LOGGER.debug("WebSocket connection successfully closed")
                 else:
                     WS_LOGGER.warning("WebSocket connection not closed")
                 self.websocket = None
 
         self.is_listening = False
-        WS_LOGGER.info("WebSocket connection closed and resources cleaned up")
+        WS_LOGGER.debug("WebSocket connection closed and resources cleaned up")
