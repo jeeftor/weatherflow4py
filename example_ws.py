@@ -2,6 +2,7 @@ import asyncio
 import os
 from collections import Counter
 from dotenv import load_dotenv
+
 from weatherflow4py.models.ws.websocket_request import (
     ListenStartMessage,
     RapidWindListenStartMessage,
@@ -14,7 +15,7 @@ from weatherflow4py.ws import WeatherFlowWebsocketAPI
 import logging
 from pprint import pprint
 
-NUMBER_OF_MESSAGES = 1
+NUMBER_OF_MESSAGES = 5
 REQUIRED_MESSAGE_TYPES = {"obs_st", "rapid_wind"}
 
 ws_logger = logging.getLogger("websockets.client")
@@ -65,8 +66,8 @@ async def main():
     api.register_wind_callback(wind_cb)
 
     await api.connect()
-    await api.send_message(ListenStartMessage(device_id=device))
-    await api.send_message(RapidWindListenStartMessage(device_id=device))
+    await api.send_message_and_wait(ListenStartMessage(device_id=device))
+    await api.send_message_and_wait(RapidWindListenStartMessage(device_id=device))
 
     while sum(
         message_counter.values()
@@ -75,13 +76,19 @@ async def main():
     ):
         await asyncio.sleep(1)
 
+    print("-" * 80)
+    await api.stop_all_listeners()
+    print("-" * 80)
+    # await api.send_message_and_wait(ListenStopMessage(device_id=device))
+    # await api.send_message_and_wait(RapidWindListenStopMessage(device_id=device))
+
     print("Received all required message types and reached message limit.")
     print("Final message count:")
     pprint(dict(message_counter))
     print("DATA::")
     pprint(api.messages)
 
-    await api.close()
+    # await api.close()
     print("Connection closed.")
 
 
@@ -101,4 +108,12 @@ if __name__ == "__main__":
             )
         except asyncio.TimeoutError:
             logger.warning("Listen task cancellation timed out or was cancelled")
-        loop.close()
+
+        # Keep the loop running until Ctrl+C is hit
+        try:
+            while True:
+                loop.run_forever()
+        except KeyboardInterrupt:
+            logger.info("Received keyboard interrupt. Exiting...")
+        finally:
+            loop.close()
