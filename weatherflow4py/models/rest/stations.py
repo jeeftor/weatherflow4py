@@ -44,7 +44,7 @@ class StationItem:
     station_id: int
     station_item_id: int
     sort: Optional[int] = None
-    device_id: Optional[int] = field(default = -1)
+    device_id: Optional[int] = field(default=-1)
 
 
 @dataclass_json
@@ -104,25 +104,32 @@ class StationsResponseREST:
     stations: list[Stations]
     status: Status
 
-
     @property
     def station_map(self) -> dict[int, Stations]:
         """Return a dictionary of stations."""
         return {station.station_id: station for station in self.stations}
 
     @property
-    def station_device_map(self) -> dict[int: list[int]]:
+    def station_device_map(self) -> dict[int : list[int]]:
         """Return a dictionary of station_id to list of device_ids."""
-        return {station.station_id: [device.device_id for device in station.devices] for station in self.stations}
+        return {
+            station.station_id: [device.device_id for device in station.devices]
+            for station in self.stations
+        }
 
     @property
-    def station_outdoor_device_map(self) -> dict[int: list[int]]:
+    def station_outdoor_device_map(self) -> dict[int : list[int]]:
         """Return a dictionary of station_id to list of outdoor device_ids."""
-        return {station.station_id: [device.device_id for device in station.outdoor_devices] for station in self.stations}
-
+        return {
+            station.station_id: [device.device_id for device in station.outdoor_devices]
+            for station in self.stations
+        }
 
     @property
     def device_station_map(self) -> dict[int, int]:
         """Return a dictionary of device_id to station_id."""
-        return {device.device_id: station.station_id for station in self.stations for device in station.devices}
-
+        return {
+            device.device_id: station.station_id
+            for station in self.stations
+            for device in station.devices
+        }

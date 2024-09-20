@@ -279,9 +279,6 @@ def test_convert_json_to_weather_data5(rest_betterforecast_5):
     assert weather_data.forecast.hourly[0].feels_like is None
 
 
-
-
-
 def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
     weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
     forecasts_daily = [x.ha_forecast for x in weather_data.forecast.daily]
@@ -364,18 +361,13 @@ def test_obs_st(obs_st_json):
 
 
 def test_rest_stations_endpoint(rest_stations_json, rest_stations_with_errors_json):
-
-
     station_data2 = StationsResponseREST.from_dict(rest_stations_with_errors_json)
     station_data1 = StationsResponseREST.from_dict(rest_stations_json)
     assert isinstance(station_data1, StationsResponseREST)
     assert isinstance(station_data2, StationsResponseREST)
 
-
-    assert station_data1.station_device_map ==  {24432: [7654321, 123456]}
+    assert station_data1.station_device_map == {24432: [7654321, 123456]}
     assert station_data2.station_outdoor_device_map == {32364: [101382]}
-
-
 
 
 def test_rest_station_endpoint(rest_station_json):

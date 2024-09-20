@@ -19,7 +19,6 @@ class WetBulbFlag(Enum):
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class Observation:
-                
     air_temperature: float
 
     brightness: int
@@ -37,7 +36,6 @@ class Observation:
     timestamp: int
     uv: float
 
-
     wind_avg: float
     wind_chill: float
     wind_direction: int
@@ -52,7 +50,6 @@ class Observation:
     station_pressure: float | None = None
     wet_bulb_globe_temperature: float | None = None
     wet_bulb_temperature: float | None = None
-
 
     # Potentially optional fields based on test data - this may grow over time.
     precip_accum_last_1hr: float = field(default=0.0)
@@ -75,6 +72,7 @@ class Observation:
     def precip_accum_local_day_nearcast(self) -> float:
         """Alias for nearcast"""
         return self.precip_accum_local_day_final
+
     @property
     def precip_accum_local_yesterday_nearcast(self) -> float:
         """Alias for nearcast"""
