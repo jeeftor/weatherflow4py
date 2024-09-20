@@ -6,8 +6,6 @@ from typing import List
 from dataclasses_json import dataclass_json
 from enum import Enum
 
-from weatherflow4py.const import REST_LOGGER
-
 
 class Condition(Enum):
     CLEAR = "Clear"

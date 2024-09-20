@@ -27,6 +27,7 @@ class BaseResponseWS:
             return NotImplemented
         return self.__dict__ == other.__dict__
 
+
 @dataclass_json
 @dataclass
 class AcknowledgementWS(BaseResponseWS):
@@ -77,13 +78,11 @@ class EventDataRapidWind:
         return self.__dict__ == other.__dict__
 
 
-
 @dataclass
 class EventDataLightningStrike:
     epoch: int
     distance_km: int
     energy: int
-
 
     def __eq__(self, other):
         if not isinstance(other, self.__class__):

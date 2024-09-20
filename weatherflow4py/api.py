@@ -33,7 +33,9 @@ class WeatherFlowRestAPI:
     def session(self):
         if self._session is None:
             if self._owned_session is None:
-                self._owned_session = aiohttp.ClientSession(headers={"Accept": "application/json"})
+                self._owned_session = aiohttp.ClientSession(
+                    headers={"Accept": "application/json"}
+                )
             return self._owned_session
         return self._session
 
@@ -45,7 +47,7 @@ class WeatherFlowRestAPI:
         pass
 
     async def _make_request(
-            self, endpoint: str, params: dict = None, response_model=None
+        self, endpoint: str, params: dict = None, response_model=None
     ):
         url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
@@ -182,9 +184,10 @@ class WeatherFlowRestAPI:
 
         return ret
 
-
     @classmethod
-    async def create(cls, api_token: str, session: Optional[aiohttp.ClientSession] = None):
+    async def create(
+        cls, api_token: str, session: Optional[aiohttp.ClientSession] = None
+    ):
         return cls(api_token, session)
 
     async def close(self):
