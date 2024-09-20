@@ -14,13 +14,14 @@ from weatherflow4py.ws import WeatherFlowWebsocketAPI
 import logging
 from pprint import pprint
 
-NUMBER_OF_MESSAGES = 5
+NUMBER_OF_MESSAGES = 1
 REQUIRED_MESSAGE_TYPES = {"obs_st", "rapid_wind"}
 
 ws_logger = logging.getLogger("websockets.client")
 ws_logger.setLevel(logging.INFO)
 
 logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 message_counter = Counter()
 received_message_types = set()
@@ -85,4 +86,19 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt. Shutting down...")
+    finally:
+        pending = asyncio.all_tasks(loop=loop)
+        try:
+            loop.run_until_complete(
+                asyncio.wait_for(
+                    asyncio.gather(*pending, return_exceptions=True), timeout=10
+                )
+            )
+        except asyncio.TimeoutError:
+            logger.warning("Listen task cancellation timed out or was cancelled")
+        loop.close()

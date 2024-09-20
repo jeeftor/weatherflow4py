@@ -225,20 +225,48 @@ class WeatherFlowWebsocketAPI:
         # Check if the websocket connection is open
         return self.websocket and not self.websocket.closed
 
-    async def close(self):
+    async def close(self, timeout: float = 5.0) -> None:
+        """
+        Close the WebSocket connection and clean up resources.
+
+        Args:
+            timeout (float): Maximum time to wait for tasks to complete (default: 5.0 seconds)
+        """
+        if not self.is_connected:
+            return
+
+        # Stop listening for all devices
+        stop_tasks = []
         for device_id in self.device_ids:
-            await asyncio.gather(
-                self.send_message(ListenStopMessage(device_id=self.device_ids)),
-                self.send_message(
-                    RapidWindListenStopMessage(device_id=self.device_ids)
-                ),
+            stop_tasks.extend(
+                [
+                    self.send_message(ListenStopMessage(device_id=device_id)),
+                    self.send_message(RapidWindListenStopMessage(device_id=device_id)),
+                ]
             )
-        if self.websocket:
-            await self.websocket.close()
-            self.websocket = None
-        if self.listen_task:
-            self.listen_task.cancel()  # Cancel the listening task
+
+        # Wait for all stop messages to be sent
+        if stop_tasks:
+            await asyncio.gather(*stop_tasks, return_exceptions=True)
+
+        # Cancel the listen task
+        if self.listen_task and not self.listen_task.done():
+            self.listen_task.cancel()
             try:
-                await self.listen_task  # Await the task to handle cancellation
+                await asyncio.wait_for(self.listen_task, timeout=timeout)
+            except asyncio.TimeoutError:
+                WS_LOGGER.warning("Listen task cancellation timed out")
             except asyncio.CancelledError:
-                pass  # Task cancellation is expected
+                WS_LOGGER.info("Listen task was cancelled")
+
+        # Close the WebSocket connection
+        if self.websocket:
+            try:
+                await asyncio.wait_for(self.websocket.close(), timeout=timeout)
+            except TimeoutError:
+                WS_LOGGER.warning("WebSocket close operation timed out")
+            finally:
+                self.websocket = None
+
+        self.is_listening = False
+        WS_LOGGER.info("WebSocket connection closed and resources cleaned up")
