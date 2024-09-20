@@ -2,6 +2,7 @@ import asyncio
 import json
 import logging
 import time
+import traceback
 from collections.abc import Callable, Awaitable
 from ssl import SSLContext
 from typing import Any, TypedDict, NotRequired
@@ -118,7 +119,7 @@ class WeatherFlowWebsocketAPI:
                     break
                 except Exception as e:
                     if not self._closing.is_set():
-                        WS_LOGGER.error("Error in WebSocket listener: %s", e)
+                        WS_LOGGER.error("Error in WebSocket listener: %s\n%s", e, traceback.format_exc())
                     break
         finally:
             self.is_listening = False
