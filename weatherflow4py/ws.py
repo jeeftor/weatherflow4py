@@ -266,6 +266,10 @@ class WeatherFlowWebsocketAPI:
             except TimeoutError:
                 WS_LOGGER.warning("WebSocket close operation timed out")
             finally:
+                if self.websocket.closed:
+                    WS_LOGGER.info("WebSocket connection successfully closed")
+                else:
+                    WS_LOGGER.warning("WebSocket connection not closed")
                 self.websocket = None
 
         self.is_listening = False
