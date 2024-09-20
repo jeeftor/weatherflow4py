@@ -27,6 +27,8 @@ from .const import WS_LOGGER
 class WeatherFlowWebsocketAPI:
     """Websocket API For Weatherflow Devices."""
 
+    _shared_websocket = None  # Class variable for the WebSocket connection
+
     def __init__(self, access_token: str, device_ids=None):
         if device_ids is None:
             device_ids = []
@@ -203,10 +205,21 @@ class WeatherFlowWebsocketAPI:
 
         :param ssl_context: Optional SSL context for secure connections
         """
-        if ssl_context is None:
-            self.websocket = await websockets.connect(self.uri)
-        else:
-            self.websocket = await websockets.connect(self.uri, ssl=ssl_context)
+        if WeatherFlowWebsocketAPI._shared_websocket is None:
+            if ssl_context is None:
+                WeatherFlowWebsocketAPI._shared_websocket = await websockets.connect(
+                    self.uri
+                )
+            else:
+                WeatherFlowWebsocketAPI._shared_websocket = await websockets.connect(
+                    self.uri, ssl=ssl_context
+                )
+
+            WS_LOGGER.info(
+                f"WebSocket connected at memory address: {id(WeatherFlowWebsocketAPI._shared_websocket)}"
+            )
+
+        self.websocket = WeatherFlowWebsocketAPI._shared_websocket
 
         # Run the listen method in the background and name the task for easier debugging
         self.listen_task = asyncio.create_task(
@@ -311,6 +324,9 @@ class WeatherFlowWebsocketAPI:
 
         # Close the WebSocket connection
         if self.websocket:
+            WS_LOGGER.info(
+                f"Attempting to close WebSocket at memory address: {id(self.websocket)}"
+            )
             try:
                 await asyncio.wait_for(self.websocket.close(), timeout=timeout)
             except asyncio.TimeoutError:
