@@ -1,10 +1,11 @@
 """Model for the forecast endpoint."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List
-from dataclasses_json import dataclass_json
+from dataclasses_json import dataclass_json, config
 from enum import Enum
+import time
 
 
 class Condition(Enum):
@@ -28,6 +29,7 @@ class Condition(Enum):
     HEAVY_RAIN = "Heavy Rain"
     VERY_HEAVY_RAIN = "Very Heavy Rain"
     EXTREME_RAIN = "Extreme Rain"
+    UNKNOWN = ""
 
 
 class Icon(Enum):
@@ -50,6 +52,7 @@ class Icon(Enum):
     SNOW = "snow"
     THUNDERSTORM = "thunderstorm"
     WINDY = "windy"
+    UNKNOWN = ""
 
     @property
     def emoji(self) -> str:
@@ -108,6 +111,24 @@ class PrecipType(Enum):
     SLEET = "sleet"
     STORM = "storm"
     NONE = "none"
+
+    @classmethod
+    def from_string(cls, value: str) -> "PrecipType":
+        value_map = {
+            "mixed_winter_precip": cls.SLEET,
+            **{member.value: member for member in cls},
+        }
+        return value_map.get(value.lower(), cls.NONE)
+
+    @staticmethod
+    def _decoder(value):
+        if isinstance(value, PrecipType):
+            return value
+        return PrecipType.from_string(value)
+
+    @staticmethod
+    def _encoder(value):
+        return value.value
 
 
 class PrecipIcon(Enum):
@@ -169,18 +190,20 @@ class CurrentConditions:
     icon: Icon  # Added missing field
     is_precip_local_day_rain_check: bool
 
-    pressure_trend: PressureTrend
     relative_humidity: int
     sea_level_pressure: float
-    solar_radiation: int
-    time: int
-    uv: int
-    wet_bulb_globe_temperature: float
-    wet_bulb_temperature: float
+
     wind_avg: float
     wind_direction: float
     wind_direction_cardinal: WindDirection
     wind_gust: float
+
+    time: int = int(time.time())
+    uv: int | None = None
+    wet_bulb_globe_temperature: float | None = None
+    wet_bulb_temperature: float | None = None
+    solar_radiation: int | None = None
+    pressure_trend: PressureTrend = PressureTrend.UNKNOWN
 
     brightness: int | None = None
     station_pressure: float | None = None
@@ -204,7 +227,6 @@ class CurrentConditions:
 class ForecastDaily:
     air_temp_high: float
     air_temp_low: float
-    conditions: Condition
     day_num: int
     day_start_local: int
     icon: Icon
@@ -212,9 +234,12 @@ class ForecastDaily:
     precip_probability: int
     sunrise: int
     sunset: int
-
+    conditions: Condition
+    # precip_type: PrecipType = PrecipType.NONE
+    precip_type: PrecipType = field(
+        metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder)
+    )
     precip_icon: PrecipIcon = PrecipIcon.NONE
-    precip_type: PrecipType = PrecipType.NONE
 
     @property
     def rfc3939_datetime(self):
@@ -247,13 +272,15 @@ class ForecastDaily:
 @dataclass(frozen=True, eq=True)
 class ForecastHourly:
     air_temperature: float
-    conditions: Condition
-    icon: Icon
+
     local_day: int
     local_hour: int
     precip: int
     precip_probability: int
-    precip_type: PrecipType
+    # precip_type: PrecipType
+    precip_type: PrecipType = field(
+        metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder)
+    )
     relative_humidity: int
     sea_level_pressure: float
     time: int
@@ -261,6 +288,9 @@ class ForecastHourly:
     wind_direction_cardinal: WindDirection
     wind_direction: float
     wind_gust: float
+
+    conditions: Condition | None = None
+    icon: Icon | None = None
     feels_like: float | None = None
     uv: float | None = None
 
@@ -313,7 +343,6 @@ class ForecastUnits:
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class WeatherDataForecastREST:
-    current_conditions: CurrentConditions
     forecast: Forecast
     latitude: float
     longitude: float
@@ -321,3 +350,4 @@ class WeatherDataForecastREST:
     timezone: str
     timezone_offset_minutes: int
     units: ForecastUnits
+    current_conditions: CurrentConditions

@@ -279,6 +279,27 @@ def test_convert_json_to_weather_data5(rest_betterforecast_5):
     assert weather_data.forecast.hourly[0].feels_like is None
 
 
+def test_convert_json_to_weather_data6(rest_betterforecast_6):
+    try:
+        weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_6)
+    except Exception as e:
+        pytest.fail(f"Failed to convert JSON data to WeatherData: {e}")
+
+        # Assert that the conversion was successful
+    assert isinstance(weather_data, WeatherDataForecastREST)
+
+    assert isinstance(weather_data.current_conditions, CurrentConditions)
+    assert isinstance(weather_data.forecast, Forecast)
+    assert isinstance(weather_data.latitude, float)
+    assert isinstance(weather_data.longitude, float)
+    assert isinstance(weather_data.location_name, str)
+    assert isinstance(weather_data.timezone, str)
+    assert isinstance(weather_data.timezone_offset_minutes, int)
+    assert isinstance(weather_data.units, ForecastUnits)
+    assert weather_data.forecast.hourly[0].uv is None
+    assert weather_data.forecast.hourly[0].feels_like is None
+
+
 def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
     weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
     forecasts_daily = [x.ha_forecast for x in weather_data.forecast.daily]
