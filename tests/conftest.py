@@ -79,6 +79,11 @@ def rest_betterforecast_5():
 
 
 @pytest.fixture
+def rest_betterforecast_6():
+    return load_fixture("fixtures/rest/betterforecast/forecast6.json")
+
+
+@pytest.fixture
 def rest_station_observation1():
     return load_fixture(
         "fixtures/rest/observations/station_id/station_observation1.json"
