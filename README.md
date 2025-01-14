@@ -15,3 +15,4 @@ It supports Rest and WebSockets
 
 - [PyPi Link](https://pypi.org/project/weatherflow4py/)
 - [Test PyPi Link](https://test.pypi.org/project/weatherflow4py/)
+o
