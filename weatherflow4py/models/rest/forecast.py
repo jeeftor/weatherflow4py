@@ -275,7 +275,7 @@ class ForecastHourly:
 
     local_day: int
     local_hour: int
-    precip: int
+    precip: float
     precip_probability: int
     # precip_type: PrecipType
     precip_type: PrecipType = field(
