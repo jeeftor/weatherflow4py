@@ -124,6 +124,8 @@ class PrecipType(Enum):
     def _decoder(value):
         if isinstance(value, PrecipType):
             return value
+        if value is None:
+            return PrecipType.NONE
         return PrecipType.from_string(value)
 
     @staticmethod
@@ -236,7 +238,8 @@ class ForecastDaily:
     sunset: int
     conditions: Condition
     # precip_type: PrecipType = PrecipType.NONE
-    precip_type: PrecipType = field(
+    precip_type: PrecipType | None = field(
+        default=PrecipType.NONE,
         metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder)
     )
     precip_icon: PrecipIcon = PrecipIcon.NONE
