@@ -27,7 +27,6 @@ class Observation:
     feels_like: float
     heat_index: float
 
-    precip: float
     pressure_trend: str
     relative_humidity: int
 
@@ -43,6 +42,7 @@ class Observation:
     wind_lull: float
 
     # Optional Fields Discovered June 18
+    precip: float | None = None
     air_density: float | None = None
     barometric_pressure: float | None = None
     delta_t: float | None = None

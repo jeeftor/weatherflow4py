@@ -104,6 +104,83 @@ def test_convert_json_to_observation(rest_station_observation1):
         assert obs.wind_lull == obs_json["wind_lull"]
 
 
+def test_convert_json_to_observation_no_precip(rest_station_observation_no_precip):
+    obs_data = ObservationStationREST.from_dict(rest_station_observation_no_precip)
+
+    assert isinstance(obs_data, ObservationStationREST)
+    assert obs_data.elevation == rest_station_observation_no_precip["elevation"]
+    assert obs_data.is_public == rest_station_observation_no_precip["is_public"]
+    assert obs_data.latitude == rest_station_observation_no_precip["latitude"]
+    assert obs_data.longitude == rest_station_observation_no_precip["longitude"]
+    assert obs_data.public_name == rest_station_observation_no_precip["public_name"]
+    assert obs_data.station_id == rest_station_observation_no_precip["station_id"]
+    assert obs_data.station_name == rest_station_observation_no_precip["station_name"]
+    assert obs_data.timezone == rest_station_observation_no_precip["timezone"]
+
+    assert obs_data.obs[0].precip_accum_local_day_final == 0
+
+    assert obs_data.obs[0].wind_cardinal_direction == "ENE"
+    assert obs_data.obs[0].wet_bulb_globe_temperature_flag == WetBulbFlag.NONE
+    assert obs_data.obs[0].wet_bulb_globe_temperature_category == 0
+    assert obs_data.obs[0].uv_index_exposure == "high"
+    assert obs_data.obs[0].uv_index_color == "orange"
+
+    for obs, obs_json in zip(obs_data.obs, rest_station_observation_no_precip["obs"]):
+        assert obs.air_density == obs_json["air_density"]
+        assert obs.air_temperature == obs_json["air_temperature"]
+        assert obs.barometric_pressure == obs_json["barometric_pressure"]
+        assert obs.brightness == obs_json["brightness"]
+        assert obs.delta_t == obs_json["delta_t"]
+        assert obs.dew_point == obs_json["dew_point"]
+        assert obs.feels_like == obs_json["feels_like"]
+        assert obs.heat_index == obs_json["heat_index"]
+        assert obs.lightning_strike_count == obs_json["lightning_strike_count"]
+        assert (
+            obs.lightning_strike_count_last_1hr
+            == obs_json["lightning_strike_count_last_1hr"]
+        )
+        assert (
+            obs.lightning_strike_count_last_3hr
+            == obs_json["lightning_strike_count_last_3hr"]
+        )
+        assert (
+            obs.lightning_strike_last_distance
+            == obs_json["lightning_strike_last_distance"]
+        )
+        assert (
+            obs.lightning_strike_last_epoch == obs_json["lightning_strike_last_epoch"]
+        )
+        assert obs.precip is None
+        assert obs.precip_accum_last_1hr == obs_json["precip_accum_last_1hr"]
+        assert obs.precip_accum_local_day == 0.0
+        assert obs.precip_accum_local_day_final == 0
+        assert (
+            obs.precip_accum_local_yesterday == obs_json["precip_accum_local_yesterday"]
+        )
+        assert obs.precip_accum_local_yesterday_final == 0
+        assert obs.precip_analysis_type_yesterday == 0
+        assert obs.precip_minutes_local_day == obs_json["precip_minutes_local_day"]
+        assert (
+            obs.precip_minutes_local_yesterday
+            == obs_json["precip_minutes_local_yesterday"]
+        )
+        assert obs.precip_minutes_local_yesterday_final == 0
+        assert obs.pressure_trend == obs_json["pressure_trend"]
+        assert obs.relative_humidity == obs_json["relative_humidity"]
+        assert obs.sea_level_pressure == obs_json["sea_level_pressure"]
+        assert obs.solar_radiation == obs_json["solar_radiation"]
+        assert obs.station_pressure == obs_json["station_pressure"]
+        assert obs.timestamp == obs_json["timestamp"]
+        assert obs.uv == obs_json["uv"]
+        assert obs.wet_bulb_globe_temperature == obs_json["wet_bulb_globe_temperature"]
+        assert obs.wet_bulb_temperature == obs_json["wet_bulb_temperature"]
+        assert obs.wind_avg == obs_json["wind_avg"]
+        assert obs.wind_chill == obs_json["wind_chill"]
+        assert obs.wind_direction == obs_json["wind_direction"]
+        assert obs.wind_gust == obs_json["wind_gust"]
+        assert obs.wind_lull == obs_json["wind_lull"]
+
+
 def test_convert_json_to_observation2(rest_station_observation2):
     obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     assert obs_data.unknown_fields == {}

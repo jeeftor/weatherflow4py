@@ -98,6 +98,13 @@ def rest_station_observation2():
 
 
 @pytest.fixture
+def rest_station_observation_no_precip():
+    return load_fixture(
+        "fixtures/rest/observations/station_id/station_observation_no_precip.json"
+    )
+
+
+@pytest.fixture
 def rest_device_observation_1():
     return load_fixture("fixtures/rest/observations/device_id/1.json")
 
