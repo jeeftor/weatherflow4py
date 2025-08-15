@@ -17,27 +17,32 @@
         ]);
       in
       {
-        devShells.default = pkgs.mkShell {
+        devShells.default = pkgs.mkShell.override { stdenv = pkgs.stdenvNoCC; shell = "${pkgs.zsh}/bin/zsh"; } {
           packages = [
             python
             pkgs.uv
             python.pkgs.python-lsp-server
             python.pkgs.pytest
+            pkgs.zsh
           ];
+          
+          # Use zsh as the shell
+          SHELL = "${pkgs.zsh}/bin/zsh";
 
           shellHook = ''
+            # ZSH compatible shell hook
             # Create a virtual environment with UV
-            if [ ! -d ".venv" ]; then
+            if [[ ! -d ".venv" ]]; then
               echo "Creating virtual environment with UV..."
               uv venv --python ${python}/bin/python .venv
             fi
 
             # Activate the virtual environment if it exists
-            if [ -f ".venv/bin/activate" ]; then
+            if [[ -f ".venv/bin/activate" ]]; then
               source .venv/bin/activate
 
               # Install dependencies with UV directly from pyproject.toml
-              if [ -f "pyproject.toml" ]; then
+              if [[ -f "pyproject.toml" ]]; then
                 echo "Installing project in development mode with all dependencies..."
                 uv pip install -e ".[dev]"
               fi

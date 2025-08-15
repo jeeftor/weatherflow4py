@@ -13,7 +13,7 @@ exclude = [
 
 [project]
 name = "weatherflow4py"
-version = "1.4.1"
+version = "1.4.2"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
 authors = [
     {name = "Jeef", email = "jeeftor@users.noreply.github.com"}
