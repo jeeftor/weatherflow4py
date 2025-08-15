@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Optional
 from dataclasses_json import dataclass_json
 
 from weatherflow4py.models.rest.status import Status
@@ -32,7 +31,7 @@ class Device:
     firmware_revision: str
     hardware_revision: str
     serial_number: str
-    device_settings: Optional[DeviceSettings] = None
+    device_settings: DeviceSettings | None = None
 
 
 @dataclass_json
@@ -43,8 +42,8 @@ class StationItem:
     location_item_id: int
     station_id: int
     station_item_id: int
-    sort: Optional[int] = None
-    device_id: Optional[int] = field(default=-1)
+    sort: int | None = None
+    device_id: int | None = field(default=-1)
 
 
 @dataclass_json
@@ -61,8 +60,8 @@ class Capability:
     capability: str
     device_id: int
     environment: str
-    agl: Optional[float] = None
-    show_precip_final: Optional[bool] = None
+    agl: float | None = None
+    show_precip_final: bool | None = None
 
 
 @dataclass_json

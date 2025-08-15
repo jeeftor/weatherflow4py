@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import List
 from dataclasses_json import dataclass_json, Undefined, CatchAll
 
 from weatherflow4py.const import BASE_LOGGER
@@ -193,8 +192,8 @@ class ObservationStationREST:
     is_public: bool
     latitude: float
     longitude: float
-    obs: List[Observation]
-    outdoor_keys: List[str]
+    obs: list[Observation]
+    outdoor_keys: list[str]
     public_name: str
     station_id: int
     station_name: str

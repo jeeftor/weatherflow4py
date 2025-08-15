@@ -1,48 +1,53 @@
 {
-  description = "A sample Flake for Home Assistant with Python 3.12 & uv";
-
+  description = "A sample Flake for Home Assistant with Python 3.13 & uv";
+  
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
   };
+  
+  outputs = { self, nixpkgs, flake-utils, ... }:
+    flake-utils.lib.eachDefaultSystem (system:
+      let
+        pkgs = nixpkgs.legacyPackages.${system};
+        python = pkgs.python313;
+        pythonEnv = python.withPackages (ps: with ps; [
+          ps.pip # ensure pip exists
+          ps.numpy # Numpy
+        ]);
+      in
+      {
+        devShells.default = pkgs.mkShell {
+          packages = [
+            python
+            pkgs.uv
+            python.pkgs.python-lsp-server
+            python.pkgs.pytest
+          ];
 
-outputs = { self, nixpkgs, flake-utils, ... }:
-  flake-utils.lib.eachDefaultSystem (system:
-    let
-      pkgs = import nixpkgs {
-        inherit system;
-        overlays = [];
-      };
-      pythonEnv = pkgs.python312.withPackages (ps: with ps; [
+          shellHook = ''
+            # Create a virtual environment with UV
+            if [ ! -d ".venv" ]; then
+              echo "Creating virtual environment with UV..."
+              uv venv --python ${python}/bin/python .venv
+            fi
 
-        ps.pip # ensure pip exists
-        ps.numpy # Numpy
-        uv
-        # Include any additional Python packages here
-      ]);
-    in
-    {
-      devShell = pkgs.mkShell {
-        buildInputs = [
-          pythonEnv
-          pkgs.autoconf # Add autoconf here
-          pkgs.libjpeg_turbo # Add turbojpeg here
-          pkgs.ffmpeg
-        ];
-         shellHook = ''        
-        # Remove flake.nix and flake.lock from GIT
-        git restore --staged flake.nix
-        #git update-index --assume-unchanged flake.lock
-        #git update-index --no-skip-worktree flake.lock
+            # Activate the virtual environment if it exists
+            if [ -f ".venv/bin/activate" ]; then
+              source .venv/bin/activate
 
-        
-        export DYLD_LIBRARY_PATH=${pkgs.libjpeg_turbo}/lib:$DYLD_LIBRARY_PATH
-        export STARSHIP_CONFIG=$(pwd)/starship.toml
-        python -m venv venv 
-        source venv/bin/activate 
-        ./script/setup
+              # Install dependencies with UV directly from pyproject.toml
+              if [ -f "pyproject.toml" ]; then
+                echo "Installing project in development mode with all dependencies..."
+                uv pip install -e ".[dev]"
+              fi
+            else
+              echo "Warning: Virtual environment activation failed. Run 'uv venv' manually."
+            fi        
 
+            # Display environment info
+            echo "UV $(uv --version) activated with Python $(python --version)"
           '';
         };
-    });
+      });
 }

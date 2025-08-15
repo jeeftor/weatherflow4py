@@ -5,7 +5,6 @@ from dotenv import load_dotenv
 
 from weatherflow4py.models.ws.websocket_request import (
     ListenStartMessage,
-    RapidWindListenStartMessage,
 )
 from weatherflow4py.models.ws.websocket_response import (
     RapidWindWS,
@@ -39,10 +38,24 @@ def wind_cb(data: RapidWindWS):
     print_message_count()
 
 
+def lightning_cb(data):
+    print("Lightning ⚡️ data received:", data)
+    message_counter["evt_strike"] += 1
+    received_message_types.add("evt_strike")
+    print_message_count()
+
+
 def obs_cb(data: ObservationTempestWS):
     print("Observation 🔎️ received")
     message_counter["obs_st"] += 1
     received_message_types.add("obs_st")
+    print_message_count()
+
+
+def precipitation_cb(data):
+    print("Precipitation 🌧️ data received:", data)
+    message_counter["evt_precip"] += 1
+    received_message_types.add("evt_precip")
     print_message_count()
 
 
@@ -64,10 +77,14 @@ async def main():
     api = WeatherFlowWebsocketAPI(token, device)
     api.register_observation_callback(obs_cb)
     api.register_wind_callback(wind_cb)
+    api.register_lightning_callback(lightning_cb)
+    api.register_precipitation_callback(precipitation_cb)
 
     await api.connect()
+    # Start most messages
     await api.send_message_and_wait(ListenStartMessage(device_id=device))
-    await api.send_message_and_wait(RapidWindListenStartMessage(device_id=device))
+    # Start wind messages
+    # await api.send_message_and_wait(RapidWindListenStartMessage(device_id=device))
 
     while sum(
         message_counter.values()
@@ -106,7 +123,7 @@ if __name__ == "__main__":
                     asyncio.gather(*pending, return_exceptions=True), timeout=10
                 )
             )
-        except asyncio.TimeoutError:
+        except TimeoutError:
             logger.warning("Listen task cancellation timed out or was cancelled")
 
         # Keep the loop running until Ctrl+C is hit

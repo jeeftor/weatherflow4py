@@ -1,40 +1,61 @@
-[tool.poetry]
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+exclude = [
+    "/.direnv",
+    "/.venv",
+    "/.git",
+    "/.github",
+    "/.nox",
+]
+
+[project]
 name = "weatherflow4py"
 version = "1.4.1"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
-authors = ["Jeef <jeeftor@users.noreply.github.com>"]
+authors = [
+    {name = "Jeef", email = "jeeftor@users.noreply.github.com"}
+]
+license = {text = "MIT"}
 readme = "README.md"
-license = "MIT"
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "dataclasses-json>=0.6.3",
+    "aiohttp>=3.9.1",
+    "marshmallow>=3.20.1",
+    "websockets>=11.0",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-dataclasses-json = "^0.6.3"
-aiohttp = ">=3.9.1"
-marshmallow = "^3.20.1"
-websockets = ">=11.0"
+[project.urls]
+Homepage = "https://github.com/jeeftor/weatherflow4py"
+Repository = "https://github.com/jeeftor/weatherflow4py"
+"Bug Tracker" = "https://github.com/jeeftor/weatherflow4py/issues"
 
+[project.optional-dependencies]
+dev = [
+    "pre-commit>=3.6.0",
+    "ruff>=0.1.9",
+    "mypy>=1.8.0",
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.23.2",
+    "aioresponses>=0.7.6",
+    "coverage>=7.4.0",
+    "python-dotenv>=1.0.1",
+    "pytest-cov>=4.1.0",
+    "uv>=0.8.10",
+]
 
-[tool.poetry.group.dev.dependencies]
-pre-commit = "^3.6.0"
-ruff = "^0.1.9"
-mypy = "^1.8.0"
-pytest = "^7.4.3"
-pytest-asyncio = "^0.23.2"
-aioresponses = "^0.7.6"
-coverage = "^7.4.0"
-python-dotenv = "^1.0.1"
-pytest-cov = "^4.1.0"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-
- [tool.pytest.ini_options]
-  #addopts = "-n 8 --cov-report xml:cov.xml --cov src --cov-report term-missing --durations-min
-  testpaths = [
-      "tests"
-  ]
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
 
 [tool.coverage.report]
 show_missing = true

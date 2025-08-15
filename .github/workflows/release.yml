@@ -29,24 +29,18 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Cache Poetry dependencies
+      - name: Cache uv dependencies
         uses: actions/cache@v4
         with:
-          path: ~/.cache/pypoetry
-          key: ${{ runner.os }}-poetry-${{ hashFiles('**/poetry.lock') }}
+          path: ~/.cache/uv
+          key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
-            ${{ runner.os }}-poetry-
+            ${{ runner.os }}-uv-
 
-      - name: Upgrade pip
+      - name: Install uv
         run: |
-          pip install --upgrade pip
-          pip --version
-
-      - name: Install Poetry
-        run: |
-          pip install poetry
-          poetry --version
-          poetry version
+          pip install uv
+          uv --version
           cat pyproject.toml
 
       - name: Check if there is a parent commit
@@ -60,22 +54,28 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "poetry version -s"
+            bash -o pipefail -c "python -c 'import tomli; print(tomli.load(open("pyproject.toml", "rb"))["project"]["version"])'"
 
       - name: Bump version for developmental release
-        if: "! steps.check-version.outputs.tag"
+        if: ${{ !steps.check-version.outputs.tag }}
         run: |
-          poetry version patch &&
-          version=$(poetry version | awk '{ print $2 }') &&
-          poetry version $version.dev.$(date +%s)
+          # Extract current version
+          current_version=$(python -c 'import tomli; print(tomli.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          # Bump patch version
+          IFS='.' read -r major minor patch <<< "$current_version"
+          new_patch=$((patch + 1))
+          new_version="$major.$minor.$new_patch.dev.$(date +%s)"
+          # Update pyproject.toml with new version
+          sed -i "s/version = \"$current_version\"/version = \"$new_version\"/" pyproject.toml
 
       - name: Build package
         run: |
-          poetry build --ansi
+          pip install build
+          python -m build
 
       - name: Verify built package
         run: |
-          poetry run pip install dist/*.whl
+          uv pip install dist/*.whl
           # Add verification commands as needed
 
       - name: Publish package on PyPI
@@ -85,7 +85,7 @@ jobs:
           password: ${{ secrets.PYPI_API_TOKEN }}
 
       - name: Publish package on TestPyPI
-        if: "! steps.check-version.outputs.tag"
+        if: ${{ !steps.check-version.outputs.tag }}
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           repository-url: https://test.pypi.org/legacy/

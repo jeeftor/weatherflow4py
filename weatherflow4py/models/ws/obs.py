@@ -1,6 +1,7 @@
 """Base message types for websockets."""
+
 from dataclasses import dataclass
-from typing import List, Union, Any, Type
+from typing import Any
 
 from weatherflow4py.models.ws.custom_types import (
     PrecipitationAnalysisType,
@@ -14,7 +15,7 @@ class base_obs:
     """Base observation class with a class method for creating instances from lists."""
 
     @classmethod
-    def from_list(cls: Type["base_obs"], lst: List) -> "base_obs":
+    def from_list(cls: type["base_obs"], lst: list) -> "base_obs":
         return cls(*lst)
 
 
@@ -96,8 +97,8 @@ class ObservationFactory:
 
     @staticmethod
     def create_observation(
-        obs_type: ObservationType, obs_data: List[List[Any]]
-    ) -> List[Union[obs_sky, obs_st, obs_air]]:
+        obs_type: ObservationType, obs_data: list[list[Any]]
+    ) -> list[obs_sky | obs_st | obs_air]:
         """Create observation instances from a list of lists."""
 
         # if type(obs_data[0]) != list:
@@ -121,7 +122,7 @@ class WebsocketObservation:
 
     type: ObservationType
     device_id: int
-    obs: List[Union[obs_sky, obs_st, obs_air]]
+    obs: list[obs_sky | obs_st | obs_air]
 
     def __post_init__(self):
         # Transform the raw observation data into the correct instances

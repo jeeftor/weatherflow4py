@@ -9,7 +9,7 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 
 
 def load_fixture(file_name):
-    with open(os.path.join(dir_path, file_name), "r") as json_file:
+    with open(os.path.join(dir_path, file_name)) as json_file:
         return json.load(json_file)
 
 

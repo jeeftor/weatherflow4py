@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import List, Union
 
 from dataclasses_json import dataclass_json
 
@@ -44,7 +43,7 @@ class DeviceObservationREST:
     type: ObservationType
     source: str
     summary: Summary
-    obs: List[Union[obs_sky, obs_st, obs_air]]  # Add this line
+    obs: list[obs_sky | obs_st | obs_air]  # Add this line
 
     #
     def __post_init__(self):

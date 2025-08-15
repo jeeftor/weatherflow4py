@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List
 from dataclasses_json import dataclass_json, config
 from enum import Enum
 import time
@@ -240,7 +239,7 @@ class ForecastDaily:
     # precip_type: PrecipType = PrecipType.NONE
     precip_type: PrecipType | None = field(
         default=PrecipType.NONE,
-        metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder)
+        metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder),
     )
     precip_icon: PrecipIcon = PrecipIcon.NONE
 
@@ -325,8 +324,8 @@ class ForecastHourly:
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class Forecast:
-    daily: List[ForecastDaily]
-    hourly: List[ForecastHourly]
+    daily: list[ForecastDaily]
+    hourly: list[ForecastHourly]
 
 
 @dataclass_json

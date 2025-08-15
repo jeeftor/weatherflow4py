@@ -1,5 +1,3 @@
-from typing import Optional
-
 import aiohttp
 
 from weatherflow4py.exceptions import TokenError
@@ -20,7 +18,7 @@ class WeatherFlowRestAPI:
 
     BASE_URL = "https://swd.weatherflow.com/swd/rest"
 
-    def __init__(self, api_token: str, session: Optional[aiohttp.ClientSession] = None):
+    def __init__(self, api_token: str, session: aiohttp.ClientSession | None = None):
         if not api_token:
             raise TokenError
 
@@ -185,9 +183,7 @@ class WeatherFlowRestAPI:
         return ret
 
     @classmethod
-    async def create(
-        cls, api_token: str, session: Optional[aiohttp.ClientSession] = None
-    ):
+    async def create(cls, api_token: str, session: aiohttp.ClientSession | None = None):
         return cls(api_token, session)
 
     async def close(self):

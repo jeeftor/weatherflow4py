@@ -3,7 +3,6 @@ from collections.abc import Callable
 
 import asyncio
 from ssl import SSLContext
-from typing import Optional
 
 import websockets
 import json
@@ -28,7 +27,7 @@ class WeatherFlowWebsocketAPI:
     """Websocket API For Weatherflow Devices."""
 
     _shared_websocket = None  # Class variable for the WebSocket connection
-    _lock = asyncio.Lock()  # Async lock for websocket initialzation
+    _lock = asyncio.Lock()  # Async lock for websocket initialization
 
     def __init__(self, access_token: str, device_ids=None):
         if device_ids is None:
@@ -165,7 +164,7 @@ class WeatherFlowWebsocketAPI:
 
     async def send_message_and_wait(
         self, message_type: WebsocketRequest, timeout: float = 5.0
-    ) -> Optional[AcknowledgementWS]:
+    ) -> AcknowledgementWS | None:
         message = message_type.json
         WS_LOGGER.debug(f"Sending message and waiting for ACK: {message}")
 
@@ -190,7 +189,7 @@ class WeatherFlowWebsocketAPI:
             # Wait for the ACK with a timeout
             return await asyncio.wait_for(ack_future, timeout=timeout)
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             WS_LOGGER.warning(f"Timeout waiting for ACK after sending: {message}")
             return None
 
@@ -201,7 +200,7 @@ class WeatherFlowWebsocketAPI:
             else:
                 self.callbacks.pop(EventType.ACKNOWLEDGEMENT.value, None)
 
-    async def connect(self, ssl_context: Optional[SSLContext] = None):
+    async def connect(self, ssl_context: SSLContext | None = None):
         """Establishes a WebSocket connection and starts a background listening task.
 
         :param ssl_context: Optional SSL context for secure connections
@@ -317,7 +316,7 @@ class WeatherFlowWebsocketAPI:
             self.listen_task.cancel()
             try:
                 await asyncio.wait_for(self.listen_task, timeout=timeout)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 WS_LOGGER.warning("Listen task cancellation timed out")
             except asyncio.CancelledError:
                 WS_LOGGER.debug("Listen task was cancelled")
@@ -331,7 +330,7 @@ class WeatherFlowWebsocketAPI:
             )
             try:
                 await asyncio.wait_for(self.websocket.close(), timeout=timeout)
-            except asyncio.TimeoutError:
+            except TimeoutError:
                 WS_LOGGER.warning("WebSocket close operation timed out")
             except Exception as e:
                 WS_LOGGER.error(f"Exception during WebSocket close operation: {e}")

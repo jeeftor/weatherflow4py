@@ -19,6 +19,12 @@ A Python library for interacting with the WeatherFlow REST API and WebSocket ser
 pip install weatherflow4py
 ```
 
+Or with uv:
+
+```bash
+uv pip install weatherflow4py
+```
+
 ## Prerequisites
 
 - Python 3.12 or higher
@@ -140,6 +146,41 @@ The library raises specific exceptions for different error conditions:
 - [WeatherFlow API Documentation](https://apidocs.tempestwx.com/reference/quick-start)
 - [WeatherFlow REST API Swagger](https://weatherflow.github.io/Tempest/api/swagger/)
 - [WeatherFlow WebSocket Documentation](https://weatherflow.github.io/Tempest/api/ws.html)
+
+## Development
+
+This project uses [uv](https://github.com/astral-sh/uv) for dependency management and virtual environment creation.
+
+### Setup with Nix
+
+If you have Nix installed with flakes enabled:
+
+```bash
+# Enter the development environment
+nix develop
+
+# This will automatically:
+# 1. Create a virtual environment with uv
+# 2. Install dependencies from requirements.txt and requirements-dev.txt
+# 3. Install the project in development mode
+```
+
+### Manual Setup with uv
+
+```bash
+# Create a virtual environment
+uv venv
+
+# Activate the virtual environment
+source .venv/bin/activate
+
+# Install dependencies
+uv pip install -r requirements.txt
+uv pip install -r requirements-dev.txt
+
+# Install the project in development mode
+uv pip install -e .
+```
 
 ## Contributing
 

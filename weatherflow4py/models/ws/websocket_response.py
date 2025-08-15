@@ -4,10 +4,10 @@ Documentation form:
  - https://apidocs.tempestwx.com/reference/websocket-reference#lightning-strike-event
  - https://weatherflow.github.io/Tempest/api/ws.html
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import List
 
 from dataclasses_json import dataclass_json, Undefined, CatchAll
 
@@ -101,7 +101,7 @@ class LightningStrikeEventWS(BaseResponseWS):
     """
 
     device_id: int
-    evt: EventDataLightningStrike | List
+    evt: EventDataLightningStrike | list
 
     def __post_init__(self):
         self.evt = EventDataLightningStrike(self.evt[0], self.evt[1], self.evt[2])
@@ -132,7 +132,7 @@ class RapidWindWS(BaseResponseWS):
     """
 
     device_id: int
-    ob: EventDataRapidWind | List
+    ob: EventDataRapidWind | list
 
     def __post_init__(self):
         self.ob = EventDataRapidWind(self.ob[0], self.ob[1], self.ob[2])
