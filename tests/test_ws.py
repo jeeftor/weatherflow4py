@@ -47,10 +47,14 @@ def test_websocket_messages(websocket_messages):
     assert isinstance(msg4, ObservationTempestWS)
     msg5 = WebsocketResponseBuilder.build_response(websocket_messages[5])
     assert isinstance(msg5, ObservationTempestWS)
+    msg6 = WebsocketResponseBuilder.build_response(websocket_messages[6])
+    assert isinstance(msg6, ObservationTempestWS)
 
     assert msg3.device_id == 211522
     assert msg3.epoch == 1709130791
 
+    assert msg6.summary.strike_last_dist == None
+    assert msg6.summary.strike_last_epoch == None
 
 def test_winds(websocket_winds):
     for msg in websocket_winds:
