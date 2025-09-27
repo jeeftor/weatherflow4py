@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Union
+from typing import List, Optional, Union
 
 from dataclasses_json import dataclass_json
 
@@ -24,14 +24,14 @@ class Summary:
     strike_count_1h: int
     strike_count_3h: int
     precip_total_1h: float
-    strike_last_dist: int
-    strike_last_epoch: int
     precip_accum_local_yesterday: float
     precip_accum_local_yesterday_final: float
     precip_analysis_type_yesterday: PrecipitationAnalysisType
     feels_like: float
     heat_index: float
     wind_chill: float
+    strike_last_dist: Optional[int] = None
+    strike_last_epoch: Optional[int] = None
 
 
 @dataclass_json
