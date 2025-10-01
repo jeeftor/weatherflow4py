@@ -55,6 +55,8 @@ def test_websocket_messages(websocket_messages):
 
     assert msg6.summary.strike_last_dist == None
     assert msg6.summary.strike_last_epoch == None
+    assert msg6.summary.pressure_trend == None
+    assert msg6.summary.precip_accum_local_yesterday_final == None
 
 def test_winds(websocket_winds):
     for msg in websocket_winds:
