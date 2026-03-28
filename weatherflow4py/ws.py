@@ -235,6 +235,8 @@ class WeatherFlowWebsocketAPI:
                 data = json.loads(message)
                 try:
                     response = WebsocketResponseBuilder.build_response(data)
+                    if response is None:
+                        WS_LOGGER.info(f"Received invalid WS Status Message {data}")
                     self.messages[data["type"]] = response
 
                     if data["type"] in self.callbacks:

@@ -15,6 +15,11 @@ from weatherflow4py.models.ws.websocket_response import (
 )
 
 
+def test_websocket_status(websocket_satus_invalid):
+    resp = WebsocketResponseBuilder.build_response(websocket_satus_invalid)
+    assert resp is None
+
+
 def test_ws_strike(websocket_strike):
     lse: LightningStrikeEventWS = LightningStrikeEventWS.from_dict(websocket_strike)
     assert lse.unknown_fields == {

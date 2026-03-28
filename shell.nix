@@ -12,19 +12,24 @@ in
 pkgs.mkShell {
   buildInputs = [
     pythonEnv
-    pkgs.poetry
   ];
 
   shellHook = ''
-    export POETRY_HOME=$(pwd)/.poetry
-    export PATH=$POETRY_HOME/bin:$PATH
-    # Optional: install Poetry if not already installed
-    if [ ! -d "$POETRY_HOME" ]; then
-      poetry config virtualenvs.in-project true
-      poetry install
+    # Create a virtual environment with UV if it doesn't exist
+    if [ ! -d ".venv" ]; then
+      echo "Creating virtual environment with UV..."
+      uv venv --python ${pythonEnv}/bin/python .venv
     fi
-    # Activate the Poetry environment
-    python -m venv .venv
+
+    # Activate the virtual environment
     source .venv/bin/activate
+
+    # Install dependencies with UV directly from pyproject.toml
+    if [ -f "pyproject.toml" ]; then
+      echo "Installing dependencies from pyproject.toml..."
+      uv pip install -e ".[dev]"
+    fi
+
+    echo "UV environment activated with Python $(python --version)"
   ''; 
 }

@@ -29,6 +29,11 @@ def websocket_strike():
 
 
 @pytest.fixture
+def websocket_satus_invalid():
+    return load_fixture("fixtures/ws/ws_status.json")
+
+
+@pytest.fixture
 def ws_obs_air():
     return load_fixture("fixtures/ws_obs_air.json")
 
@@ -81,6 +86,11 @@ def rest_betterforecast_5():
 @pytest.fixture
 def rest_betterforecast_6():
     return load_fixture("fixtures/rest/betterforecast/forecast6.json")
+
+
+@pytest.fixture
+def rest_betterforecast_missing_fields():
+    return load_fixture("fixtures/rest/betterforecast/forecast_missing_fields.json")
 
 
 @pytest.fixture

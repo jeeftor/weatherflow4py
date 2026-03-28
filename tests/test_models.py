@@ -377,6 +377,36 @@ def test_convert_json_to_weather_data6(rest_betterforecast_6):
     assert weather_data.forecast.hourly[0].feels_like is None
 
 
+def test_hourly_forecast_missing_optional_fields(rest_betterforecast_missing_fields):
+    """Test that hourly forecasts with missing sea_level_pressure or precip_probability parse without error."""
+    try:
+        weather_data = WeatherDataForecastREST.from_dict(
+            rest_betterforecast_missing_fields
+        )
+    except Exception as e:
+        pytest.fail(f"Failed to parse forecast with missing optional fields: {e}")
+
+    hourly = weather_data.forecast.hourly
+    assert len(hourly) == 3
+
+    # First entry has both fields present
+    assert hourly[0].sea_level_pressure == 1022.1
+    assert hourly[0].precip_probability == 5
+
+    # Second entry is missing both sea_level_pressure and precip_probability
+    assert hourly[1].sea_level_pressure is None
+    assert hourly[1].precip_probability is None
+
+    # Third entry is missing only sea_level_pressure
+    assert hourly[2].sea_level_pressure is None
+    assert hourly[2].precip_probability == 0
+
+    # ha_forecast should work even with None values
+    forecasts = [h.ha_forecast for h in hourly]
+    assert forecasts[1]["native_pressure"] is None
+    assert forecasts[1]["precipitation_probability"] is None
+
+
 def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
     weather_data = WeatherDataForecastREST.from_dict(rest_betterforecast_1)
     forecasts_daily = [x.ha_forecast for x in weather_data.forecast.daily]

@@ -13,14 +13,14 @@ exclude = [
 
 [project]
 name = "weatherflow4py"
-version = "1.4.2"
+version = "1.5.0"
 description = "Python library used by Home Assistant to interact with the WeatherFlow REST API"
 authors = [
     {name = "Jeef", email = "jeeftor@users.noreply.github.com"}
 ]
 license = {text = "MIT"}
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.12,<4.0"
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3.12",
@@ -42,7 +42,6 @@ Repository = "https://github.com/jeeftor/weatherflow4py"
 dev = [
     "pre-commit>=3.6.0",
     "ruff>=0.1.9",
-    "mypy>=1.8.0",
     "pytest>=7.4.3",
     "pytest-asyncio>=0.23.2",
     "aioresponses>=0.7.6",
@@ -50,7 +49,9 @@ dev = [
     "python-dotenv>=1.0.1",
     "pytest-cov>=4.1.0",
     "uv>=0.8.10",
+    "ty>=0.0.1a21",
 ]
+
 
 [tool.pytest.ini_options]
 testpaths = [
@@ -67,3 +68,20 @@ source = ["weatherflow4py", "tests"]
 [tool.coverage.paths]
 source = ["weatherflow4py", "*/site-packages"]
 tests = ["tests", "*/tests"]
+
+# TY
+[tool.ty]
+environment = { python-version = "3.13" }
+
+[tool.ty.rules]
+unresolved-attribute = "error" 
+invalid-argument-type = "error" 
+invalid-parameter-default = "error" 
+missing-argument = "error" 
+invalid-type-form = "error" 
+
+[tool.ty.src]
+exclude = [
+    "tests/fixtures/**",
+    "example*.py",
+]

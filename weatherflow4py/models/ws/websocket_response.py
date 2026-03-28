@@ -199,4 +199,6 @@ class WebsocketResponseBuilder:
         try:
             return response_class.from_dict(data)
         except KeyError as exec:
+            if data.get("status", {}).get("status_message") == "SUCCESS":
+                return None
             raise ValueError(f"Invalid response: {data}") from exec

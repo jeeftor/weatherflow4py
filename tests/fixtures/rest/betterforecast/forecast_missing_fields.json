@@ -1,0 +1,99 @@
+{
+  "current_conditions": {
+    "air_temperature": 4.0,
+    "conditions": "Clear",
+    "feels_like": 3.0,
+    "icon": "clear-day",
+    "is_precip_local_day_rain_check": true,
+    "relative_humidity": 27,
+    "sea_level_pressure": 1022.1,
+    "wind_avg": 2.0,
+    "wind_direction": 40,
+    "wind_direction_cardinal": "NE",
+    "wind_gust": 4.0
+  },
+  "forecast": {
+    "daily": [
+      {
+        "air_temp_high": 5.0,
+        "air_temp_low": -6.0,
+        "conditions": "Clear",
+        "day_num": 28,
+        "day_start_local": 1703746800,
+        "icon": "clear-day",
+        "month_num": 12,
+        "precip_icon": "chance-rain",
+        "precip_probability": 0,
+        "precip_type": "rain",
+        "sunrise": 1703773057,
+        "sunset": 1703807070
+      }
+    ],
+    "hourly": [
+      {
+        "air_temperature": 4.0,
+        "conditions": "Clear",
+        "icon": "clear-day",
+        "local_day": 28,
+        "local_hour": 18,
+        "precip": 0.0,
+        "precip_type": "rain",
+        "relative_humidity": 27,
+        "sea_level_pressure": 1022.1,
+        "precip_probability": 5,
+        "time": 1703793600,
+        "wind_avg": 2.0,
+        "wind_direction": 40,
+        "wind_direction_cardinal": "NE",
+        "wind_gust": 4.0
+      },
+      {
+        "air_temperature": 3.0,
+        "conditions": "Clear",
+        "icon": "clear-night",
+        "local_day": 28,
+        "local_hour": 19,
+        "precip": 0.0,
+        "precip_type": "rain",
+        "relative_humidity": 28,
+        "time": 1703797200,
+        "wind_avg": 2.0,
+        "wind_direction": 42,
+        "wind_direction_cardinal": "NE",
+        "wind_gust": 3.0
+      },
+      {
+        "air_temperature": 2.0,
+        "conditions": "Clear",
+        "icon": "clear-night",
+        "local_day": 28,
+        "local_hour": 20,
+        "precip": 0.0,
+        "precip_probability": 0,
+        "precip_type": "rain",
+        "relative_humidity": 29,
+        "time": 1703800800,
+        "wind_avg": 1.5,
+        "wind_direction": 38,
+        "wind_direction_cardinal": "NE",
+        "wind_gust": 2.5
+      }
+    ]
+  },
+  "latitude": 45.0,
+  "longitude": -93.0,
+  "location_name": "Test Location",
+  "timezone": "America/Chicago",
+  "timezone_offset_minutes": -360,
+  "units": {
+    "units_air_density": "kg/m3",
+    "units_brightness": "lux",
+    "units_distance": "km",
+    "units_other": "metric",
+    "units_precip": "mm",
+    "units_pressure": "mb",
+    "units_solar_radiation": "W/m2",
+    "units_temp": "c",
+    "units_wind": "mps"
+  }
+}

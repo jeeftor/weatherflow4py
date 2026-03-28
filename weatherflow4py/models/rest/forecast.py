@@ -1,7 +1,7 @@
 """Model for the forecast endpoint."""
 
 from dataclasses import dataclass, field
-from datetime import datetime
+import datetime
 from dataclasses_json import dataclass_json, config
 from enum import Enum
 import time
@@ -245,7 +245,9 @@ class ForecastDaily:
 
     @property
     def rfc3939_datetime(self):
-        utc_datetime = datetime.utcfromtimestamp(self.day_start_local)
+        utc_datetime = datetime.datetime.fromtimestamp(
+            self.day_start_local, datetime.UTC
+        )
         return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
@@ -278,13 +280,11 @@ class ForecastHourly:
     local_day: int
     local_hour: int
     precip: float
-    precip_probability: int
     # precip_type: PrecipType
     precip_type: PrecipType = field(
         metadata=config(encoder=PrecipType._encoder, decoder=PrecipType._decoder)
     )
     relative_humidity: int
-    sea_level_pressure: float
     time: int
     wind_avg: float
     wind_direction_cardinal: WindDirection
@@ -295,10 +295,12 @@ class ForecastHourly:
     icon: Icon | None = None
     feels_like: float | None = None
     uv: float | None = None
+    sea_level_pressure: float | None = None
+    precip_probability: int | None = None
 
     @property
     def rfc3939_datetime(self):
-        utc_datetime = datetime.utcfromtimestamp(self.time)
+        utc_datetime = datetime.datetime.fromtimestamp(self.time, datetime.UTC)
         return utc_datetime.strftime("%Y-%m-%dT%H:%M:%SZ")
 
     @property
