@@ -77,6 +77,17 @@ jobs:
         run: |
           uv pip install --system dist/*.whl
 
+      - name: Generate CHANGELOG.md
+        if: steps.check-version.outputs.tag
+        run: |
+          pip install git-cliff
+          git-cliff --tag ${{ steps.check-version.outputs.tag }} -o CHANGELOG.md
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git diff --cached --quiet || git commit -m "docs: update CHANGELOG.md for ${{ steps.check-version.outputs.tag }} [skip ci]"
+          git push
+
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
         uses: pypa/gh-action-pypi-publish@release/v1

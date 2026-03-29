@@ -1,29 +1,60 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
 categories:
-  - title: ":boom: Breaking Changes"
-    label: "breaking"
-  - title: ":rocket: Features"
-    label: "enhancement"
-  - title: ":fire: Removals and Deprecations"
-    label: "removal"
-  - title: ":beetle: Fixes"
-    label: "bug"
-  - title: ":racehorse: Performance"
-    label: "performance"
-  - title: ":rotating_light: Testing"
-    label: "testing"
-  - title: ":construction_worker: Continuous Integration"
-    label: "ci"
-  - title: ":books: Documentation"
-    label: "documentation"
-  - title: ":hammer: Refactoring"
-    label: "refactoring"
-  - title: ":lipstick: Style"
-    label: "style"
-  - title: ":package: Dependencies"
+  - title: ':boom: Breaking Changes'
+    label: 'breaking'
+  - title: ':rocket: Features'
     labels:
-      - "dependencies"
-      - "build"
+      - 'enhancement'
+      - 'feature'
+  - title: ':beetle: Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+  - title: ':fire: Removals and Deprecations'
+    label: 'removal'
+  - title: ':racehorse: Performance'
+    label: 'performance'
+  - title: ':rotating_light: Testing'
+    label: 'testing'
+  - title: ':construction_worker: CI/CD'
+    label: 'ci'
+  - title: ':books: Documentation'
+    label: 'documentation'
+  - title: ':hammer: Refactoring'
+    label: 'refactoring'
+  - title: ':package: Dependencies'
+    labels:
+      - 'dependencies'
+      - 'build'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking'
+  minor:
+    labels:
+      - 'minor'
+      - 'feature'
+      - 'enhancement'
+  patch:
+    labels:
+      - 'patch'
+      - 'fix'
+      - 'bug'
+      - 'chore'
+      - 'dependencies'
+      - 'ci'
+  default: patch
+
 template: |
-  ## Changes
+  ## What's Changed
 
   $CHANGES
+
+  **Full Changelog**: https://github.com/jeeftor/weatherflow4py/blob/master/CHANGELOG.md
