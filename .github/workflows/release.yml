@@ -75,8 +75,7 @@ jobs:
 
       - name: Verify built package
         run: |
-          uv pip install dist/*.whl
-          # Add verification commands as needed
+          uv pip install --system dist/*.whl
 
       - name: Publish package on PyPI
         if: steps.check-version.outputs.tag
