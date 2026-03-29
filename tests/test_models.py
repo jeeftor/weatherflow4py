@@ -181,6 +181,25 @@ def test_convert_json_to_observation_no_precip(rest_station_observation_no_preci
         assert obs.wind_lull == obs_json["wind_lull"]
 
 
+def test_convert_json_to_observation_no_wind(rest_station_observation_no_wind):
+    obs_data = ObservationStationREST.from_dict(rest_station_observation_no_wind)
+
+    assert isinstance(obs_data, ObservationStationREST)
+
+    obs = obs_data.obs[0]
+    assert obs.wind_avg is None
+    assert obs.wind_chill is None
+    assert obs.wind_direction is None
+    assert obs.wind_gust is None
+    assert obs.wind_lull is None
+    assert obs.feels_like is None
+
+    # Properties should return None gracefully rather than raising
+    assert obs.wind_cardinal_direction is None
+    assert obs.wet_bulb_globe_temperature_flag == WetBulbFlag.NONE
+    assert obs.wet_bulb_globe_temperature_category == 0
+
+
 def test_convert_json_to_observation2(rest_station_observation2):
     obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     assert obs_data.unknown_fields == {}
