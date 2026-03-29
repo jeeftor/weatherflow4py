@@ -28,7 +28,7 @@ classifiers = [
 ]
 dependencies = [
     "dataclasses-json>=0.6.3",
-    "aiohttp>=3.9.1",
+    "aiohttp>=3.13.3",
     "marshmallow>=3.20.1",
     "websockets>=11.0",
 ]
@@ -50,6 +50,14 @@ dev = [
     "pytest-cov>=4.1.0",
     "uv>=0.8.10",
     "ty>=0.0.1a21",
+]
+
+[dependency-groups]
+dev = [
+    "filelock>=3.20.3",
+    "marshmallow>=3.26.2",
+    "pip-audit>=2.10.0",
+    "virtualenv>=20.36.1",
 ]
 
 
@@ -85,3 +93,9 @@ exclude = [
     "tests/fixtures/**",
     "example*.py",
 ]
+
+[[tool.ty.overrides]]
+include = ["tests/**"]
+
+[tool.ty.overrides.rules]
+unresolved-attribute = "ignore"

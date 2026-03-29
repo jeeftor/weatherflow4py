@@ -45,7 +45,7 @@ class GeoStrikeListenStartMessage(WebsocketRequest):
         lat_max: float,
         lon_min: float,
         lon_max: float,
-        strike_type: LightingStrikeType = None,
+        strike_type: LightingStrikeType | None = None,
     ):
         super().__init__("geo_strike_listen_start", "whatever")
         self.lat_min = lat_min

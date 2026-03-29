@@ -18,7 +18,7 @@ class MessageType(Enum):
     RAPID_WIND_STOP = "listen_rapid_stop"
 
 
-class LightingStrikeType:
+class LightingStrikeType(str, Enum):
     ALL = "all"
     CLOUD_TO_GROUND = "cg"
     CLOUD_TO_CLOUD = "ic"

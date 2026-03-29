@@ -86,5 +86,4 @@ async def test_api_calls_unauthorized(unauthorized_json):
 @pytest.mark.asyncio
 async def test_bad_token():
     with pytest.raises(TokenError):
-        token: str = None
-        WeatherFlowRestAPI(token)
+        WeatherFlowRestAPI(None)  # type: ignore[invalid-argument-type]

@@ -45,7 +45,7 @@ class WeatherFlowRestAPI:
         pass
 
     async def _make_request(
-        self, endpoint: str, params: dict = None, response_model=None
+        self, endpoint: str, params: dict | None = None, response_model=None
     ):
         url = URL(f"{self.BASE_URL}/{endpoint}")
         full_params = {"token": self.api_token, **(params or {})}
