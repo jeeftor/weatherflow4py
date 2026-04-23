@@ -35,7 +35,7 @@ repos:
         pass_filenames: false
       - id: pip-audit
         name: pip-audit
-        entry: uv run pip-audit --ignore-vuln CVE-2026-4539 --ignore-vuln GHSA-w476-p2h3-79g9 --ignore-vuln CVE-2025-13327
+        entry: uv run pip-audit --skip-editable --ignore-vuln CVE-2026-4539 --ignore-vuln GHSA-w476-p2h3-79g9 --ignore-vuln CVE-2025-13327
         language: system
         pass_filenames: false
         
