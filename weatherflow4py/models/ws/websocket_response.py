@@ -8,6 +8,7 @@ Documentation form:
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, cast
 
 from dataclasses_json import dataclass_json, Undefined, CatchAll
 
@@ -101,21 +102,28 @@ class LightningStrikeEventWS(BaseResponseWS):
     """
 
     device_id: int
-    evt: EventDataLightningStrike | list
+    evt: EventDataLightningStrike | list[Any]
 
     def __post_init__(self):
-        self.evt = EventDataLightningStrike(self.evt[0], self.evt[1], self.evt[2])
+        if isinstance(self.evt, list):
+            raw: list[Any] = self.evt
+            self.evt = EventDataLightningStrike(
+                cast(int, raw[0]), cast(int, raw[1]), cast(int, raw[2])
+            )
 
     @property
     def epoch(self) -> int:
+        assert isinstance(self.evt, EventDataLightningStrike)
         return self.evt.epoch
 
     @property
     def distance_km(self) -> int:
+        assert isinstance(self.evt, EventDataLightningStrike)
         return self.evt.distance_km
 
     @property
     def energy(self) -> int:
+        assert isinstance(self.evt, EventDataLightningStrike)
         return self.evt.energy
 
 
@@ -132,10 +140,14 @@ class RapidWindWS(BaseResponseWS):
     """
 
     device_id: int
-    ob: EventDataRapidWind | list
+    ob: EventDataRapidWind | list[Any]
 
     def __post_init__(self):
-        self.ob = EventDataRapidWind(self.ob[0], self.ob[1], self.ob[2])
+        if isinstance(self.ob, list):
+            raw_ob: list[Any] = self.ob
+            self.ob = EventDataRapidWind(
+                cast(int, raw_ob[0]), cast(int, raw_ob[1]), cast(int, raw_ob[2])
+            )
 
 
 @dataclass_json
@@ -192,12 +204,14 @@ class WebsocketResponseBuilder:
         }
 
         response_type = data.get("type")
+        if response_type is None:
+            raise ValueError(f"Invalid type: {response_type}")
         response_class = type_class_map.get(response_type)
 
         if response_class is None:
             raise ValueError(f"Invalid type: {response_type}")
         try:
-            return response_class.from_dict(data)
+            return cast(Any, response_class).from_dict(data)
         except KeyError as exec:
             if data.get("status", {}).get("status_message") == "SUCCESS":
                 return None

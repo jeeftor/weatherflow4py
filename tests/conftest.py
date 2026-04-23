@@ -122,6 +122,13 @@ def rest_station_observation_no_wind():
 
 
 @pytest.fixture
+def rest_station_observation_no_air_temp():
+    return load_fixture(
+        "fixtures/rest/observations/station_id/station_observation_no_air_temp.json"
+    )
+
+
+@pytest.fixture
 def rest_device_observation_1():
     return load_fixture("fixtures/rest/observations/device_id/1.json")
 

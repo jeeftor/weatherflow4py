@@ -18,8 +18,6 @@ class WetBulbFlag(Enum):
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class Observation:
-    air_temperature: float
-
     brightness: int
 
     dew_point: float
@@ -34,6 +32,7 @@ class Observation:
     uv: float
 
     # Optional fields: wind sensors may be disabled during low battery conditions
+    air_temperature: float | None = None
     feels_like: float | None = None
     wind_avg: float | None = None
     wind_chill: float | None = None

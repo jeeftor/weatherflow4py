@@ -5,6 +5,8 @@ import asyncio
 from ssl import SSLContext
 
 import websockets
+import websockets.asyncio.client
+from websockets.connection import State as WebSocketState
 import json
 
 from weatherflow4py.models.ws.types import EventType
@@ -34,7 +36,7 @@ class WeatherFlowWebsocketAPI:
             device_ids = []
         self.device_ids = device_ids
         self.uri = f"wss://ws.weatherflow.com/swd/data?token={access_token}"
-        self.websocket = None
+        self.websocket: websockets.asyncio.client.ClientConnection | None = None
         self.messages = {}
         self.is_listening = False
         self.listen_task = None  # To keep track of the listening task
@@ -229,6 +231,7 @@ class WeatherFlowWebsocketAPI:
 
     async def listen(self):
         self.is_listening = True
+        assert self.websocket is not None
         try:
             async for message in self.websocket:
                 WS_LOGGER.debug(f"Received message: {message}")
@@ -278,7 +281,9 @@ class WeatherFlowWebsocketAPI:
 
     def is_connected(self):
         # Check if the websocket connection is open
-        return self.websocket and not self.websocket.closed
+        return (
+            self.websocket is not None and self.websocket.state is WebSocketState.OPEN
+        )
 
     async def stop_all_listeners(self):
         """
@@ -337,7 +342,7 @@ class WeatherFlowWebsocketAPI:
             except Exception as e:
                 WS_LOGGER.error(f"Exception during WebSocket close operation: {e}")
             finally:
-                if self.websocket.closed:
+                if self.websocket.state is WebSocketState.CLOSED:
                     WS_LOGGER.debug("WebSocket connection successfully closed")
                 else:
                     WS_LOGGER.warning("WebSocket connection not closed")
