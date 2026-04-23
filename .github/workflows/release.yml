@@ -6,6 +6,7 @@ on:
       - main
       - master
       - websockets
+  workflow_dispatch:
 
 permissions: write-all
 
