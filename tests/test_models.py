@@ -200,6 +200,23 @@ def test_convert_json_to_observation_no_wind(rest_station_observation_no_wind):
     assert obs.wet_bulb_globe_temperature_category == 0
 
 
+def test_convert_json_to_observation_no_air_temp(rest_station_observation_no_air_temp):
+    """Regression test for GitHub issue #128: KeyError when air_temperature is absent."""
+    try:
+        obs_data = ObservationStationREST.from_dict(
+            rest_station_observation_no_air_temp
+        )
+    except Exception as e:
+        pytest.fail(f"Failed to parse observation without air_temperature: {e}")
+
+    assert isinstance(obs_data, ObservationStationREST)
+
+    obs = obs_data.obs[0]
+    assert obs.air_temperature is None
+    assert obs.brightness == 89976
+    assert obs.relative_humidity == 62
+
+
 def test_convert_json_to_observation2(rest_station_observation2):
     obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     assert obs_data.unknown_fields == {}

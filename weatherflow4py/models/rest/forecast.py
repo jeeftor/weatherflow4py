@@ -184,7 +184,6 @@ class VisibilityUnit(Enum):
 @dataclass_json()
 @dataclass(frozen=True, eq=True)
 class CurrentConditions:
-    air_temperature: float
     conditions: Condition
 
     feels_like: float
@@ -200,6 +199,7 @@ class CurrentConditions:
     wind_gust: float
 
     time: int = int(time.time())
+    air_temperature: float | None = None
     uv: int | None = None
     wet_bulb_globe_temperature: float | None = None
     wet_bulb_temperature: float | None = None
@@ -309,7 +309,7 @@ class ForecastHourly:
         return {
             # UTC Date time in RFC 3339 format.
             "datetime": self.rfc3939_datetime,
-            "condition": self.icon.ha_icon,
+            "condition": self.icon.ha_icon if self.icon else None,
             "humidity": self.relative_humidity,
             "native_apparent_temperature": self.feels_like,
             "native_precipitation": self.precip,
