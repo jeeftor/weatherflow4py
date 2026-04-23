@@ -11,9 +11,9 @@ All notable changes to this project will be documented in this file.
 
 - Add git-cliff changelog generation and improve release-drafter config
 
-### Features
+### Testing
 
-- Version Bump
+- Add comprehensive tests boosting coverage from 73% to 95%
 
 ## [1.5.1] - 2026-03-29
 
