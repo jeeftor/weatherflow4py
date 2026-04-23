@@ -1146,7 +1146,7 @@ wheels = [
 
 [[package]]
 name = "weatherflow4py"
-version = "1.5.3"
+version = "1.5.4"
 source = { editable = "." }
 dependencies = [
     { name = "aiohttp" },
