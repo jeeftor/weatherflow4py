@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 ## [1.5.5] - 2026-04-24
 
+### Bug Fixes
+
+- Fix WebSocket shutdown compatibility with newer `websockets` releases to avoid disconnect errors during cleanup
+
 ### CI/CD
 
 - Add a dedicated CI workflow for linting, testing, and coverage checks
@@ -13,6 +17,10 @@ All notable changes to this project will be documented in this file.
 
 - Standardize local verification through `make verify`
 - Update the Ruff pre-commit hook version and relax ty's missing-argument rule in tests
+
+### Testing
+
+- Add a regression test covering WebSocket close behavior for connections that expose `.state` instead of `.closed`
 
 ## [1.5.3] - 2026-04-23
 
@@ -67,4 +75,3 @@ All notable changes to this project will be documented in this file.
 - Add pressure and precipititation probability to hourly forecast
 
 ## [0.1.9] - 2023-12-28
-

@@ -195,6 +195,31 @@ def test_is_connected_closed():
     assert api.is_connected() is False
 
 
+@pytest.mark.asyncio
+async def test_close_uses_websocket_state_instead_of_closed_attribute():
+    """close() should work with websockets ClientConnection objects that lack `.closed`."""
+
+    class FakeClientConnection:
+        def __init__(self) -> None:
+            self.state = WebSocketState.OPEN
+            self.close_calls = 0
+
+        async def close(self) -> None:
+            self.close_calls += 1
+            self.state = WebSocketState.CLOSED
+
+    api = WeatherFlowWebsocketAPI("t")
+    websocket = FakeClientConnection()
+    api.websocket = websocket
+    api.is_listening = True
+
+    await api.close()
+
+    assert websocket.close_calls == 1
+    assert api.websocket is None
+    assert api.is_listening is False
+
+
 # ---------------------------------------------------------------------------
 # last_observation / last_wind / last_observation_time
 # ---------------------------------------------------------------------------
