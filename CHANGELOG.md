@@ -1,6 +1,19 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [1.5.5] - 2026-04-24
+
+### CI/CD
+
+- Add a dedicated CI workflow for linting, testing, and coverage checks
+- Migrate hook execution from pre-commit to prek across local tooling and GitHub Actions
+- Improve release verification by building with uv and validating the built wheel in an isolated environment
+
+### Developer Experience
+
+- Standardize local verification through `make verify`
+- Update the Ruff pre-commit hook version and relax ty's missing-argument rule in tests
+
 ## [1.5.3] - 2026-04-23
 
 ### Bug Fixes
@@ -54,5 +67,4 @@ All notable changes to this project will be documented in this file.
 - Add pressure and precipititation probability to hourly forecast
 
 ## [0.1.9] - 2023-12-28
-
 
