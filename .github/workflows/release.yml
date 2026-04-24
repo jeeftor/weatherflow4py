@@ -3,7 +3,6 @@ name: Release
 on:
   push:
     branches:
-      - main
       - master
       - websockets
 
@@ -27,21 +26,18 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.13"
 
-      - name: Cache uv dependencies
-        uses: actions/cache@v4
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
         with:
-          path: ~/.cache/uv
-          key: ${{ runner.os }}-uv-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-uv-
+          enable-cache: true
 
-      - name: Install uv
-        run: |
-          pip install uv
-          uv --version
-          cat pyproject.toml
+      - name: Install prek
+        run: uv tool install prek
+
+      - name: Run verification checks
+        run: make verify
 
       - name: Check if there is a parent commit
         id: check-parent-commit
@@ -54,13 +50,13 @@ jobs:
         uses: salsify/action-detect-and-tag-new-version@v2.0.3
         with:
           version-command: |
-            bash -o pipefail -c "python -c 'import tomllib; print(tomllib.load(open(\"pyproject.toml\", \"rb\"))[\"project\"][\"version\"])'"
+            bash -o pipefail -c "uv run python -c 'import tomllib; print(tomllib.load(open(\"pyproject.toml\", \"rb\"))[\"project\"][\"version\"])'"
 
       - name: Bump version for developmental release
         if: ${{ !steps.check-version.outputs.tag }}
         run: |
           # Extract current version
-          current_version=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          current_version=$(uv run python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
           # Bump patch version
           IFS='.' read -r major minor patch <<< "$current_version"
           new_patch=$((patch + 1))
@@ -69,19 +65,17 @@ jobs:
           sed -i "s/version = \"$current_version\"/version = \"$new_version\"/" pyproject.toml
 
       - name: Build package
-        run: |
-          pip install build
-          python -m build
+        run: uv build
 
       - name: Verify built package
         run: |
-          uv pip install --system dist/*.whl
+          cd /tmp
+          uv run --isolated --no-project --with "$GITHUB_WORKSPACE"/dist/*.whl python -c "import pathlib; import weatherflow4py; package_path = pathlib.Path(weatherflow4py.__file__).resolve(); print(package_path); assert 'site-packages' in str(package_path), package_path"
 
       - name: Generate CHANGELOG.md
         if: steps.check-version.outputs.tag
         run: |
-          pip install git-cliff
-          git-cliff --tag ${{ steps.check-version.outputs.tag }} -o CHANGELOG.md
+          uv tool run git-cliff --tag ${{ steps.check-version.outputs.tag }} -o CHANGELOG.md
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md

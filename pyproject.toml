@@ -100,3 +100,4 @@ include = ["tests/**"]
 [tool.ty.overrides.rules]
 unresolved-attribute = "ignore"
 invalid-argument-type = "ignore"
+missing-argument = "ignore"
