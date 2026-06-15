@@ -3,94 +3,12 @@
 All notable changes to this project will be documented in this file.
 ## [1.5.7] - 2026-06-15
 
-### Bug Fixes
-
-- Decode station observations that omit sensor-derived fields such as `solar_radiation` instead of discarding the whole observation
-- Return `None` for UV color and exposure helpers when UV data is absent
-
-### Testing
-
-- Add regression coverage for station observations that omit `solar_radiation`
-
-### Security
-
-- Update locked release dependencies to patched versions required by `pip-audit`
-
 ### CI/CD
 
-- Fix release changelog publishing when GitHub Actions checks out a detached `HEAD`
+- Fix release changelog push
 
-## [1.5.5] - 2026-04-24
+### Miscellaneous
 
-### Bug Fixes
+- Bump version to 1.5.7
 
-- Fix WebSocket shutdown compatibility with newer `websockets` releases to avoid disconnect errors during cleanup
 
-### CI/CD
-
-- Add a dedicated CI workflow for linting, testing, and coverage checks
-- Migrate hook execution from pre-commit to prek across local tooling and GitHub Actions
-- Improve release verification by building with uv and validating the built wheel in an isolated environment
-
-### Developer Experience
-
-- Standardize local verification through `make verify`
-- Update the Ruff pre-commit hook version and relax ty's missing-argument rule in tests
-
-### Testing
-
-- Add a regression test covering WebSocket close behavior for connections that expose `.state` instead of `.closed`
-
-## [1.5.3] - 2026-04-23
-
-### Bug Fixes
-
-- Make air temperature optional and fix all ty type errors
-
-### CI/CD
-
-- Add git-cliff changelog generation and improve release-drafter config
-
-### Testing
-
-- Add comprehensive tests boosting coverage from 73% to 95%
-
-## [1.5.1] - 2026-03-29
-
-### CI/CD
-
-- Fix uv pip install missing --system flag in release workflow
-
-### Features
-
-- Make wind observations and related fields optional (v1.5.1)
-
-## [1.5.0] - 2026-03-29
-
-### Bug Fixes
-
-- Resolve ty errors, add pip-audit hook, and upgrade vulnerable deps
-
-### CI/CD
-
-- Version bump
-- Fix release workflow by replacing tomli with stdlib tomllib
-
-### Features
-
-- Initial test of uv migration push to github
-- Make ForecastHourly.sea_level_pressure and precip_probability optional
-
-## [1.3.2] - 2025-06-18
-
-### Features
-
-- Updated optionality and test for precip which appears to be optional
-
-## [0.2.22] - 2024-07-03
-
-### Ha
-
-- Add pressure and precipititation probability to hourly forecast
-
-## [0.1.9] - 2023-12-28
