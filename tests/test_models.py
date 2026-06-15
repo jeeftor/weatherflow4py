@@ -217,6 +217,33 @@ def test_convert_json_to_observation_no_air_temp(rest_station_observation_no_air
     assert obs.relative_humidity == 62
 
 
+def test_convert_json_to_observation_no_solar_radiation(
+    rest_station_observation_no_solar_radiation,
+):
+    """Regression test: KeyError when solar_radiation is absent.
+
+    Some stations never report solar_radiation (it is in neither obs[0] nor
+    outdoor_keys). The whole observation must still decode, with
+    solar_radiation falling back to None.
+    """
+    try:
+        obs_data = ObservationStationREST.from_dict(
+            rest_station_observation_no_solar_radiation
+        )
+    except Exception as e:
+        pytest.fail(f"Failed to parse observation without solar_radiation: {e}")
+
+    assert isinstance(obs_data, ObservationStationREST)
+
+    obs = obs_data.obs[0]
+    assert obs.solar_radiation is None
+    # The fields the station *does* report still decode correctly.
+    assert obs.brightness == 252439
+    assert obs.relative_humidity == 48
+    assert obs.uv == 19.8
+    assert "solar_radiation" not in obs_data.outdoor_keys
+
+
 def test_convert_json_to_observation2(rest_station_observation2):
     obs_data = ObservationStationREST.from_dict(rest_station_observation2)
     assert obs_data.unknown_fields == {}

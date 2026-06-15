@@ -18,18 +18,24 @@ class WetBulbFlag(Enum):
 @dataclass_json
 @dataclass(frozen=True, eq=True)
 class Observation:
-    brightness: int
-
-    dew_point: float
-    heat_index: float
-
-    pressure_trend: str
-    relative_humidity: int
-
-    solar_radiation: int
-
+    # ``timestamp`` is the only field present in every observation across all
+    # stations/firmware, so it is the sole required field.
     timestamp: int
-    uv: float
+
+    # Sensor-derived fields. A station may omit any of these when it does not
+    # report that measurement (e.g. GitHub #128 air_temperature, #156969
+    # brightness, and solar_radiation for stations that lack the sensor).
+    # These are decoded by dataclasses_json, whose decode path performs a bare
+    # ``kvs[field.name]`` lookup -- so the *default value* (not merely the
+    # ``| None`` hint) is what lets a missing key decode to ``None`` instead of
+    # raising ``KeyError`` and discarding the whole observation.
+    brightness: int | None = None
+    dew_point: float | None = None
+    heat_index: float | None = None
+    pressure_trend: str | None = None
+    relative_humidity: int | None = None
+    solar_radiation: int | None = None
+    uv: float | None = None
 
     # Optional fields: wind sensors may be disabled during low battery conditions
     air_temperature: float | None = None
@@ -132,8 +138,10 @@ class Observation:
         return WetBulbFlag(self.wet_bulb_globe_temperature_category)
 
     @property
-    def uv_index_color(self) -> str:
-        """Return the UV index color."""
+    def uv_index_color(self) -> str | None:
+        """Return the UV index color, or None when the station has no UV sensor."""
+        if self.uv is None:
+            return None
         if self.uv <= 2:
             return "green"
         if self.uv <= 5:
@@ -145,8 +153,10 @@ class Observation:
         return "purple"
 
     @property
-    def uv_index_exposure(self) -> str:
-        """Return the UV exposure level."""
+    def uv_index_exposure(self) -> str | None:
+        """Return the UV exposure level, or None when the station has no UV sensor."""
+        if self.uv is None:
+            return None
         if self.uv <= 2:
             return "low"
         if self.uv <= 5:
