@@ -1,6 +1,21 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
+## [1.5.6] - 2026-06-15
+
+### Bug Fixes
+
+- Decode station observations that omit sensor-derived fields such as `solar_radiation` instead of discarding the whole observation
+- Return `None` for UV color and exposure helpers when UV data is absent
+
+### Testing
+
+- Add regression coverage for station observations that omit `solar_radiation`
+
+### Security
+
+- Update locked release dependencies to patched versions required by `pip-audit`
+
 ## [1.5.5] - 2026-04-24
 
 ### Bug Fixes

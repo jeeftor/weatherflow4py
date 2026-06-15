@@ -2,7 +2,6 @@ import json
 import os
 
 import pytest
-from aioresponses import aioresponses
 from weatherflow4py.api import WeatherFlowRestAPI
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -168,12 +167,6 @@ def rest_stations_json():
 @pytest.fixture
 def rest_stations_with_errors_json():
     return load_fixture("fixtures/rest/stations/stations_with_errors.json")
-
-
-@pytest.fixture
-async def mock_aioresponse():
-    with aioresponses() as m:
-        yield m
 
 
 @pytest.fixture

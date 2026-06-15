@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from typing import cast
 from unittest.mock import AsyncMock, MagicMock, patch, PropertyMock
 
 import pytest
@@ -17,6 +18,7 @@ from weatherflow4py.models.ws.websocket_response import (
     RapidWindWS,
 )
 from weatherflow4py.ws import WeatherFlowWebsocketAPI
+from websockets.asyncio.client import ClientConnection
 from websockets.connection import State as WebSocketState
 
 
@@ -210,7 +212,7 @@ async def test_close_uses_websocket_state_instead_of_closed_attribute():
 
     api = WeatherFlowWebsocketAPI("t")
     websocket = FakeClientConnection()
-    api.websocket = websocket
+    api.websocket = cast(ClientConnection, websocket)
     api.is_listening = True
 
     await api.close()
