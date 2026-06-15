@@ -1,7 +1,7 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [1.5.6] - 2026-06-15
+## [1.5.7] - 2026-06-15
 
 ### Bug Fixes
 
@@ -15,6 +15,10 @@ All notable changes to this project will be documented in this file.
 ### Security
 
 - Update locked release dependencies to patched versions required by `pip-audit`
+
+### CI/CD
+
+- Fix release changelog publishing when GitHub Actions checks out a detached `HEAD`
 
 ## [1.5.5] - 2026-04-24
 
