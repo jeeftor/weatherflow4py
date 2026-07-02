@@ -10,10 +10,11 @@ from weatherflow4py.models.rest.device import (
     PrecipitationAnalysisType,
 )
 from weatherflow4py.models.rest.forecast import (
-    WeatherDataForecastREST,
-    Forecast,
     CurrentConditions,
+    Forecast,
     ForecastUnits,
+    Icon,
+    WeatherDataForecastREST,
 )
 from weatherflow4py.models.ws.obs import ObservationType
 from weatherflow4py.models.rest.observation import ObservationStationREST, WetBulbFlag
@@ -479,6 +480,22 @@ def test_convert_weather_data_ha_forecast(rest_betterforecast_1):
     assert forecasts_hourly[1]["datetime"] == "2023-12-28T19:00:00Z"
     assert forecasts_hourly[2]["datetime"] == "2023-12-28T20:00:00Z"
     assert forecasts_daily[0]["datetime"] == "2023-12-28T07:00:00Z"
+
+
+@pytest.mark.parametrize(
+    ("icon", "ha_icon"),
+    [
+        (Icon.POSSIBLY_RAINY_DAY, "rainy"),
+        (Icon.POSSIBLY_RAINY_NIGHT, "rainy"),
+        (Icon.POSSIBLY_SLEET_DAY, "snowy-rainy"),
+        (Icon.POSSIBLY_SLEET_NIGHT, "snowy-rainy"),
+        (Icon.SLEET, "snowy-rainy"),
+        (Icon.THUNDERSTORM, "lightning-rainy"),
+        (Icon.WINDY, "windy"),
+    ],
+)
+def test_ha_icon_mappings(icon: Icon, ha_icon: str) -> None:
+    assert icon.ha_icon == ha_icon
 
 
 def test_obs_st(obs_st_json):
