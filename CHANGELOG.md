@@ -1,14 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [1.5.7] - 2026-06-15
+## [1.5.8] - 2026-07-02
 
-### CI/CD
+### Bug Fixes
 
-- Fix release changelog push
+- Correct HA weather condition mappings
 
-### Miscellaneous
+### Documentation
 
-- Bump version to 1.5.7
+- Update CHANGELOG.md for v1.5.7 [skip ci]
 
 
