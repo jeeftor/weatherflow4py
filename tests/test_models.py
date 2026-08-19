@@ -16,7 +16,7 @@ from weatherflow4py.models.rest.forecast import (
     Icon,
     WeatherDataForecastREST,
 )
-from weatherflow4py.models.ws.obs import ObservationType
+from weatherflow4py.models.ws.obs import ObservationType, obs_air, obs_sky
 from weatherflow4py.models.rest.observation import ObservationStationREST, WetBulbFlag
 
 
@@ -561,11 +561,90 @@ def test_obs_st(obs_st_json):
     assert obs_st.average_strike_distance == obs_st_json["obs"][0][14]
     assert obs_st.strike_count == obs_st_json["obs"][0][15]
     assert obs_st.battery == obs_st_json["obs"][0][16]
+    assert obs_st.battery_voltage == obs_st_json["obs"][0][16]
+    assert obs_st.battery_percent == pytest.approx(100)
     assert obs_st.report_interval == obs_st_json["obs"][0][17]
     assert obs_st.local_day_rain_accumulation == obs_st_json["obs"][0][18]
     assert obs_st.nc_rain_accumulation == obs_st_json["obs"][0][19]
     assert obs_st.local_day_nc_rain_accumulation == obs_st_json["obs"][0][20]
     assert obs_st.precipitation_analysis_type == PrecipitationAnalysisType.NONE
+
+
+def test_battery_percent_matches_weatherflowudp_curves():
+    tempest = DeviceObservationTempestREST.from_dict(
+        {
+            "status": {"status_code": 0, "status_message": "SUCCESS"},
+            "device_id": 123456,
+            "type": "obs_st",
+            "source": "cache",
+            "summary": {
+                "pressure_trend": "rising",
+                "strike_count_1h": 0,
+                "strike_count_3h": 0,
+                "precip_total_1h": 0.0,
+                "precip_accum_local_yesterday": 0.0,
+                "precip_analysis_type_yesterday": 0,
+                "feels_like": 0.0,
+                "heat_index": 0.0,
+                "wind_chill": 0.0,
+            },
+            "obs": [
+                [
+                    1709057252,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0,
+                    3,
+                    781.9,
+                    -3.7,
+                    88,
+                    14155,
+                    0.49,
+                    118,
+                    0,
+                    0,
+                    0,
+                    0,
+                    2.62,
+                    1,
+                    0.0,
+                    0.0,
+                    0.0,
+                    0,
+                ]
+            ],
+        }
+    )
+
+    assert tempest.battery_voltage == 2.62
+    assert tempest.battery_percent == pytest.approx(97.77777777777779)
+
+    air = obs_air(1709057252, 781.9, -3.7, 88, 0, 0, 2.6, 1)
+    assert air.battery_voltage == 2.6
+    assert air.battery_percent == pytest.approx(50)
+
+    sky = obs_sky(
+        1709057252,
+        14155,
+        0.49,
+        0,
+        0,
+        0,
+        0,
+        0,
+        2.76,
+        1,
+        118,
+        0,
+        PrecipitationType.NONE,
+        3,
+        0,
+        0,
+        PrecipitationAnalysisType.NONE,
+    )
+    assert sky.battery_voltage == 2.76
+    assert sky.battery_percent == pytest.approx(80)
 
 
 def test_rest_stations_endpoint(rest_stations_json, rest_stations_with_errors_json):
