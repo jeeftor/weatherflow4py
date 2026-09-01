@@ -547,6 +547,7 @@ async def test_stop_all_listeners_sends_messages():
     """stop_all_listeners sends stop messages for each device_id."""
     api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
     mock_ws = AsyncMock()
+    mock_ws.state = WebSocketState.OPEN
     api.websocket = mock_ws
 
     # send_message_and_wait will timeout (no real ACK), but we just need sends to happen
@@ -561,11 +562,53 @@ async def test_stop_all_listeners_no_devices():
     """stop_all_listeners with no device_ids does nothing."""
     api = WeatherFlowWebsocketAPI("t")
     mock_ws = AsyncMock()
+    mock_ws.state = WebSocketState.OPEN
     api.websocket = mock_ws
 
     await api.stop_all_listeners()
 
     mock_ws.send.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_stop_all_listeners_skips_when_not_connected():
+    """stop_all_listeners is a no-op when the websocket is not connected."""
+    api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
+    mock_ws = AsyncMock()
+    mock_ws.state = WebSocketState.CLOSED
+    api.websocket = mock_ws
+
+    await api.stop_all_listeners()
+
+    mock_ws.send.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_stop_all_listeners_skips_when_no_websocket():
+    """stop_all_listeners is a no-op when there is no websocket at all."""
+    api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
+
+    await api.stop_all_listeners()  # should not raise
+
+
+@pytest.mark.asyncio
+async def test_stop_all_listeners_no_unawaited_coroutines_on_closed_socket():
+    """When the socket is already closed, stop_all_listeners must not raise and
+    must not leak unawaited coroutines (the prior cause of
+    'RuntimeWarning: coroutine send_message_and_wait was never awaited')."""
+    from websockets.exceptions import ConnectionClosedOK
+
+    api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
+    mock_ws = AsyncMock()
+    mock_ws.state = WebSocketState.OPEN
+    # Every send raises because the server already closed the socket.
+    mock_ws.send.side_effect = ConnectionClosedOK(None, None)
+    api.websocket = mock_ws
+
+    # Should not raise; all stop coroutines are awaited via gather.
+    await api.stop_all_listeners()
+
+    assert mock_ws.send.call_count == 4
 
 
 # ---------------------------------------------------------------------------
@@ -610,3 +653,141 @@ async def test_close_cancels_listen_task_and_closes_websocket():
 
     mock_ws.close.assert_called_once()
     assert api.websocket is None
+
+
+@pytest.mark.asyncio
+async def test_close_resets_shared_websocket():
+    """close() clears the class-level _shared_websocket so a subsequent
+    connect() opens a fresh socket instead of reusing the closed one."""
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+    api = WeatherFlowWebsocketAPI("t")
+
+    mock_ws = AsyncMock()
+    type(mock_ws).state = PropertyMock(
+        side_effect=[
+            WebSocketState.OPEN,  # close() is_connected() check
+            WebSocketState.OPEN,  # stop_all_listeners is_connected() check
+            WebSocketState.CLOSED,  # finally state check
+        ]
+    )
+    api.websocket = mock_ws
+    WeatherFlowWebsocketAPI._shared_websocket = mock_ws
+
+    async def _noop():
+        pass
+
+    done_task = asyncio.create_task(_noop())
+    await done_task
+    api.listen_task = done_task
+
+    await api.close()
+
+    assert WeatherFlowWebsocketAPI._shared_websocket is None
+    assert api.websocket is None
+
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+
+@pytest.mark.asyncio
+async def test_close_clears_shared_websocket_when_already_closed():
+    """When the server already closed the socket (idle timeout), close() must
+    still clear the class-level _shared_websocket reference — otherwise reload
+    reuses the dead socket and fails until the process restarts."""
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+    api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
+
+    dead_ws = MagicMock()
+    dead_ws.state = WebSocketState.CLOSED
+    api.websocket = dead_ws
+    WeatherFlowWebsocketAPI._shared_websocket = dead_ws
+
+    await api.close()
+
+    assert WeatherFlowWebsocketAPI._shared_websocket is None
+    assert api.websocket is None
+    # Must not attempt to send stop messages on a dead socket.
+    dead_ws.send.assert_not_called()
+
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+
+@pytest.mark.asyncio
+async def test_close_does_not_reset_shared_websocket_owned_by_another_instance():
+    """close() must not clear _shared_websocket if it points at a different
+    connection than the one this instance is closing."""
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+    api = WeatherFlowWebsocketAPI("t")
+
+    other_ws = MagicMock()
+    other_ws.state = WebSocketState.OPEN
+    WeatherFlowWebsocketAPI._shared_websocket = other_ws
+
+    my_ws = MagicMock()
+    my_ws.state = WebSocketState.CLOSED
+    my_ws.close = AsyncMock()
+    api.websocket = my_ws
+
+    await api.close()
+
+    # The other instance's shared socket must be left intact.
+    assert WeatherFlowWebsocketAPI._shared_websocket is other_ws
+
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+
+@pytest.mark.asyncio
+async def test_close_does_not_call_is_connected_as_bound_method():
+    """Regression guard: close() must call is_connected() (with parens), not
+    reference the bound method which is always truthy. With a closed socket the
+    early-return path must fire and stop_all_listeners must be skipped."""
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+    api = WeatherFlowWebsocketAPI("t", device_ids=[111, 222])
+    closed_ws = MagicMock()
+    closed_ws.state = WebSocketState.CLOSED
+    api.websocket = closed_ws
+
+    await api.close()
+
+    # If the guard worked, we never tried to send on the closed socket.
+    closed_ws.send.assert_not_called()
+    assert api.websocket is None
+
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+
+@pytest.mark.asyncio
+async def test_reconnect_after_idle_timeout_close_opens_fresh_socket():
+    """End-to-end style: after close() clears the dead shared socket, a
+    subsequent connect() opens a brand new connection (the reload scenario)."""
+    WeatherFlowWebsocketAPI._shared_websocket = None
+
+    api = WeatherFlowWebsocketAPI("t")
+    dead_ws = MagicMock()
+    dead_ws.state = WebSocketState.CLOSED
+    api.websocket = dead_ws
+    WeatherFlowWebsocketAPI._shared_websocket = dead_ws
+
+    await api.close()
+    assert WeatherFlowWebsocketAPI._shared_websocket is None
+
+    fresh_ws = _make_mock_websocket([])
+    with patch(
+        "weatherflow4py.ws.websockets.connect", new_callable=AsyncMock
+    ) as mock_connect:
+        mock_connect.return_value = fresh_ws
+        await api.connect()
+        # A new connection was actually opened.
+        mock_connect.assert_called_once()
+        assert api.websocket is fresh_ws
+        if api.listen_task:
+            api.listen_task.cancel()
+            try:
+                await api.listen_task
+            except (asyncio.CancelledError, AssertionError):
+                pass
+
+    WeatherFlowWebsocketAPI._shared_websocket = None

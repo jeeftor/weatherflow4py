@@ -7,6 +7,7 @@ from ssl import SSLContext
 import websockets
 import websockets.asyncio.client
 from websockets.connection import State as WebSocketState
+from websockets.exceptions import ConnectionClosed
 import json
 
 from weatherflow4py.models.ws.types import EventType
@@ -289,9 +290,13 @@ class WeatherFlowWebsocketAPI:
         """
         Stop listening for all devices - waits for acknowledgement
         """
-        stop_tasks = []
+        if not self.is_connected():
+            WS_LOGGER.debug("Skipping stop_all_listeners - websocket not connected")
+            return
+
+        stop_coros = []
         for device_id in self.device_ids:
-            stop_tasks.extend(
+            stop_coros.extend(
                 [
                     self.send_message_and_wait(ListenStopMessage(device_id=device_id)),
                     self.send_message_and_wait(
@@ -300,9 +305,16 @@ class WeatherFlowWebsocketAPI:
                 ]
             )
 
-        if stop_tasks:
-            for task in stop_tasks:
-                await task
+        # gather with return_exceptions so a single failure (e.g. the server
+        # already closed the socket) doesn't leave the remaining coroutines
+        # unawaited, which previously produced
+        # "RuntimeWarning: coroutine 'send_message_and_wait' was never awaited".
+        results = await asyncio.gather(*stop_coros, return_exceptions=True)
+        for result in results:
+            if isinstance(result, ConnectionClosed):
+                WS_LOGGER.debug(f"stop_all_listeners send failed: {result!r}")
+            elif isinstance(result, BaseException):
+                WS_LOGGER.warning(f"Unexpected error stopping listener: {result!r}")
 
         WS_LOGGER.debug("Stopped listening for all devices 🙉️")
 
@@ -313,7 +325,21 @@ class WeatherFlowWebsocketAPI:
         Args:
             timeout (float): Maximum time to wait for tasks to complete (default: 5.0 seconds)
         """
-        if not self.is_connected:
+        # Capture the connection before nulling anything so we can clear the
+        # class-level reference even on the early-return path.
+        websocket = self.websocket
+
+        if not self.is_connected():
+            # The socket is already gone (e.g. server idle timeout). Clear the
+            # class-level reference so a subsequent connect() opens a fresh
+            # socket instead of reusing this dead one.
+            if (
+                websocket is not None
+                and WeatherFlowWebsocketAPI._shared_websocket is websocket
+            ):
+                WeatherFlowWebsocketAPI._shared_websocket = None
+            self.websocket = None
+            self.is_listening = False
             return
 
         await self.stop_all_listeners()
@@ -347,6 +373,14 @@ class WeatherFlowWebsocketAPI:
                 else:
                     WS_LOGGER.warning("WebSocket connection not closed")
                 self.websocket = None
+
+        # Clear the class-level reference so a subsequent connect() opens a new
+        # socket rather than reusing the (now closed) shared one.
+        if (
+            websocket is not None
+            and WeatherFlowWebsocketAPI._shared_websocket is websocket
+        ):
+            WeatherFlowWebsocketAPI._shared_websocket = None
 
         self.is_listening = False
         WS_LOGGER.debug("WebSocket connection closed and resources cleaned up")
