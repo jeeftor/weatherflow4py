@@ -12,9 +12,12 @@ import json
 
 from weatherflow4py.models.ws.types import EventType
 from weatherflow4py.models.ws.websocket_request import (
-    WebsocketRequest,
+    GeoStrikeListenStartMessage,
+    ListenStartMessage,
     ListenStopMessage,
+    RapidWindListenStartMessage,
     RapidWindListenStopMessage,
+    WebsocketRequest,
 )
 from weatherflow4py.models.ws.websocket_response import (
     WebsocketResponseBuilder,
@@ -42,6 +45,9 @@ class WeatherFlowWebsocketAPI:
         self.is_listening = False
         self.listen_task = None  # To keep track of the listening task
         self.callbacks = {}
+        self._active_subscriptions: list[WebsocketRequest] = []
+        self._shutting_down = False
+        self._ssl_context: SSLContext | None = None
 
         WS_LOGGER.debug("WebsocketAPI initialized with URI: " + self.uri)
 
@@ -160,10 +166,41 @@ class WeatherFlowWebsocketAPI:
             return time_difference
         return None
 
+    def _track_subscription(self, message_type: WebsocketRequest) -> None:
+        """Track listen_start/stop messages so they can be replayed after reconnect."""
+        if isinstance(
+            message_type,
+            (
+                ListenStartMessage,
+                RapidWindListenStartMessage,
+                GeoStrikeListenStartMessage,
+            ),
+        ):
+            self._active_subscriptions.append(message_type)
+        elif isinstance(message_type, ListenStopMessage):
+            self._active_subscriptions = [
+                m
+                for m in self._active_subscriptions
+                if not (
+                    isinstance(m, ListenStartMessage)
+                    and m.device_id == message_type.device_id
+                )
+            ]
+        elif isinstance(message_type, RapidWindListenStopMessage):
+            self._active_subscriptions = [
+                m
+                for m in self._active_subscriptions
+                if not (
+                    isinstance(m, RapidWindListenStartMessage)
+                    and m.device_id == message_type.device_id
+                )
+            ]
+
     async def send_message(self, message_type: WebsocketRequest):
         message = message_type.json
         WS_LOGGER.debug(f"Sending message: {message}")
         await self._send(message)
+        self._track_subscription(message_type)
 
     async def send_message_and_wait(
         self, message_type: WebsocketRequest, timeout: float = 5.0
@@ -188,6 +225,7 @@ class WeatherFlowWebsocketAPI:
         try:
             # Send the message
             await self._send(message)
+            self._track_subscription(message_type)
 
             # Wait for the ACK with a timeout
             return await asyncio.wait_for(ack_future, timeout=timeout)
@@ -206,7 +244,27 @@ class WeatherFlowWebsocketAPI:
     async def connect(self, ssl_context: SSLContext | None = None):
         """Establishes a WebSocket connection and starts a background listening task.
 
+        The listening task includes a supervisor that automatically reconnects
+        with exponential backoff when the server closes the connection (e.g.
+        idle timeout, keepalive ping timeout), replaying all active
+        subscriptions after each successful reconnect.
+
         :param ssl_context: Optional SSL context for secure connections
+        """
+        self._ssl_context = ssl_context
+        self._shutting_down = False
+        await self._open_connection(ssl_context)
+
+        # Run the supervisor in the background; it calls listen() and
+        # reconnects on unexpected disconnect.
+        self.listen_task = asyncio.create_task(
+            self._listen_supervisor(), name="WebSocketListenSupervisor"
+        )
+
+    async def _open_connection(self, ssl_context: SSLContext | None = None) -> None:
+        """Open the shared websocket connection if not already open.
+
+        Does not start a listen task — the supervisor handles that.
         """
         async with WeatherFlowWebsocketAPI._lock:
             if WeatherFlowWebsocketAPI._shared_websocket is None:
@@ -225,10 +283,80 @@ class WeatherFlowWebsocketAPI:
 
             self.websocket = WeatherFlowWebsocketAPI._shared_websocket
 
-            # Run the listen method in the background and name the task for easier debugging
-            self.listen_task = asyncio.create_task(
-                self.listen(), name="WebSocketListenTask"
-            )
+    async def _listen_supervisor(self) -> None:
+        """Run listen() in a loop, reconnecting on unexpected disconnect."""
+        while not self._shutting_down:
+            # Yield to the event loop each iteration so close() can run even
+            # when listen() returns instantly (e.g. already-closed socket).
+            await asyncio.sleep(0)
+            try:
+                await self.listen()
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                WS_LOGGER.warning(f"Listen loop exited with error: {e!r}")
+
+            if self._shutting_down:
+                break
+
+            WS_LOGGER.info("WebSocket disconnected, attempting reconnect...")
+            if not await self._reconnect():
+                WS_LOGGER.error("Reconnect failed, supervisor exiting")
+                break
+
+    async def _reconnect(
+        self,
+        initial_backoff: float = 1.0,
+        max_backoff: float = 60.0,
+    ) -> bool:
+        """Reconnect with exponential backoff and replay subscriptions.
+
+        Retries indefinitely until the connection succeeds or ``_shutting_down``
+        is set. Returns ``True`` on success, ``False`` if interrupted by shutdown.
+        """
+        backoff = initial_backoff
+        attempt = 0
+        while not self._shutting_down:
+            attempt += 1
+            try:
+                # Clear the dead shared websocket so _open_connection opens a
+                # fresh one. Only clear it if it's the same object we're
+                # holding — another instance may have already reconnected.
+                async with WeatherFlowWebsocketAPI._lock:
+                    if (
+                        WeatherFlowWebsocketAPI._shared_websocket is not None
+                        and WeatherFlowWebsocketAPI._shared_websocket is self.websocket
+                    ):
+                        WeatherFlowWebsocketAPI._shared_websocket = None
+                    self.websocket = None
+
+                await self._open_connection(self._ssl_context)
+                await self._replay_subscriptions()
+                WS_LOGGER.info(f"WebSocket reconnected on attempt {attempt}")
+                return True
+            except asyncio.CancelledError:
+                raise
+            except Exception as e:
+                WS_LOGGER.warning(f"Reconnect attempt {attempt} failed: {e!r}")
+                if self._shutting_down:
+                    return False
+                await asyncio.sleep(backoff)
+                backoff = min(backoff * 2, max_backoff)
+        return False
+
+    async def _replay_subscriptions(self) -> None:
+        """Resend all active listen_start subscriptions after reconnecting.
+
+        Uses ``_send`` directly rather than ``send_message`` to avoid
+        double-tracking subscriptions that are already in the list.
+        """
+        for message in list(self._active_subscriptions):
+            try:
+                await self._send(message.json)
+            except Exception as e:
+                WS_LOGGER.warning(
+                    f"Failed to replay subscription {message.to_dict()}: {e!r}"
+                )
 
     async def listen(self):
         self.is_listening = True
@@ -325,6 +453,9 @@ class WeatherFlowWebsocketAPI:
         Args:
             timeout (float): Maximum time to wait for tasks to complete (default: 5.0 seconds)
         """
+        # Signal the supervisor to stop reconnecting before we tear anything down.
+        self._shutting_down = True
+
         # Capture the connection before nulling anything so we can clear the
         # class-level reference even on the early-return path.
         websocket = self.websocket
@@ -340,11 +471,12 @@ class WeatherFlowWebsocketAPI:
                 WeatherFlowWebsocketAPI._shared_websocket = None
             self.websocket = None
             self.is_listening = False
+            self._active_subscriptions.clear()
             return
 
         await self.stop_all_listeners()
 
-        # Cancel the listen task
+        # Cancel the listen task (supervisor)
         if self.listen_task and not self.listen_task.done():
             self.listen_task.cancel()
             try:
@@ -382,5 +514,6 @@ class WeatherFlowWebsocketAPI:
         ):
             WeatherFlowWebsocketAPI._shared_websocket = None
 
+        self._active_subscriptions.clear()
         self.is_listening = False
         WS_LOGGER.debug("WebSocket connection closed and resources cleaned up")
