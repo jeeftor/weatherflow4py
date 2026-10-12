@@ -7,6 +7,7 @@ from ssl import SSLContext
 import websockets
 import websockets.asyncio.client
 from websockets.connection import State as WebSocketState
+from websockets.exceptions import WebSocketException
 import json
 
 from weatherflow4py.models.ws.types import EventType
@@ -31,6 +32,22 @@ class WeatherFlowWebsocketAPI:
     _shared_websocket = None  # Class variable for the WebSocket connection
     _lock = asyncio.Lock()  # Async lock for websocket initialization
 
+    _LISTEN_START_TYPES = {
+        "listen_start",
+        "listen_rapid_start",
+        "geo_strike_listen_start",
+    }
+    _STOP_MESSAGE_TYPES = {
+        "listen_start": ListenStopMessage,
+        "listen_rapid_start": RapidWindListenStopMessage,
+    }
+    _STOP_TO_START_TYPES = {
+        "listen_stop": "listen_start",
+        "listen_rapid_stop": "listen_rapid_start",
+    }
+    _RECONNECT_MIN_DELAY = 1.0
+    _RECONNECT_MAX_DELAY = 60.0
+
     def __init__(self, access_token: str, device_ids=None):
         if device_ids is None:
             device_ids = []
@@ -41,6 +58,9 @@ class WeatherFlowWebsocketAPI:
         self.is_listening = False
         self.listen_task = None  # To keep track of the listening task
         self.callbacks = {}
+        self._closing = False
+        self._ssl_context: SSLContext | None = None
+        self._subscriptions: dict[tuple[str, str], WebsocketRequest] = {}
 
         WS_LOGGER.debug("WebsocketAPI initialized with URI: " + self.uri)
 
@@ -159,10 +179,19 @@ class WeatherFlowWebsocketAPI:
             return time_difference
         return None
 
+    def _update_subscriptions(self, message: WebsocketRequest) -> None:
+        """Track listen subscriptions so they can be restored on reconnect."""
+        device_id = getattr(message, "device_id", message.id)
+        if message.type in self._LISTEN_START_TYPES:
+            self._subscriptions[(message.type, device_id)] = message
+        elif start_type := self._STOP_TO_START_TYPES.get(message.type):
+            self._subscriptions.pop((start_type, device_id), None)
+
     async def send_message(self, message_type: WebsocketRequest):
         message = message_type.json
         WS_LOGGER.debug(f"Sending message: {message}")
         await self._send(message)
+        self._update_subscriptions(message_type)
 
     async def send_message_and_wait(
         self, message_type: WebsocketRequest, timeout: float = 5.0
@@ -187,12 +216,16 @@ class WeatherFlowWebsocketAPI:
         try:
             # Send the message
             await self._send(message)
+            self._update_subscriptions(message_type)
 
             # Wait for the ACK with a timeout
             return await asyncio.wait_for(ack_future, timeout=timeout)
 
         except TimeoutError:
             WS_LOGGER.warning(f"Timeout waiting for ACK after sending: {message}")
+            return None
+        except (WebSocketException, OSError) as err:
+            WS_LOGGER.warning(f"Failed to send message {message}: {err}")
             return None
 
         finally:
@@ -202,78 +235,118 @@ class WeatherFlowWebsocketAPI:
             else:
                 self.callbacks.pop(EventType.ACKNOWLEDGEMENT.value, None)
 
+    async def _open_websocket(self) -> None:
+        """Open the shared websocket if it is missing or no longer open."""
+        async with WeatherFlowWebsocketAPI._lock:
+            shared = WeatherFlowWebsocketAPI._shared_websocket
+            if shared is None or shared.state is not WebSocketState.OPEN:
+                kwargs = {"ssl": self._ssl_context} if self._ssl_context else {}
+                shared = await websockets.connect(self.uri, **kwargs)
+                WeatherFlowWebsocketAPI._shared_websocket = shared
+                WS_LOGGER.debug(f"WebSocket connected at memory address: {id(shared)}")
+
+            self.websocket = shared
+
     async def connect(self, ssl_context: SSLContext | None = None):
         """Establishes a WebSocket connection and starts a background listening task.
 
         :param ssl_context: Optional SSL context for secure connections
         """
-        async with WeatherFlowWebsocketAPI._lock:
-            if WeatherFlowWebsocketAPI._shared_websocket is None:
-                if ssl_context is None:
-                    WeatherFlowWebsocketAPI._shared_websocket = (
-                        await websockets.connect(self.uri)
-                    )
-                else:
-                    WeatherFlowWebsocketAPI._shared_websocket = (
-                        await websockets.connect(self.uri, ssl=ssl_context)
-                    )
+        self._ssl_context = ssl_context
+        self._closing = False
+        await self._open_websocket()
 
-                WS_LOGGER.debug(
-                    f"WebSocket connected at memory address: {id(WeatherFlowWebsocketAPI._shared_websocket)}"
+        # Run the listen method in the background and name the task for easier debugging
+        self.listen_task = asyncio.create_task(
+            self.listen(), name="WebSocketListenTask"
+        )
+
+    async def _reconnect(self) -> bool:
+        """Reopen the websocket and restore subscriptions.
+
+        Returns True once reconnected, or False when close() was requested.
+        """
+        delay = self._RECONNECT_MIN_DELAY
+        while not self._closing:
+            try:
+                await self._open_websocket()
+                for subscription in list(self._subscriptions.values()):
+                    await self.send_message(subscription)
+            except asyncio.CancelledError:
+                raise
+            except (WebSocketException, OSError, TimeoutError) as err:
+                WS_LOGGER.warning(
+                    f"Websocket reconnect failed ({err}); retrying in {delay:.0f} s"
                 )
-
-            self.websocket = WeatherFlowWebsocketAPI._shared_websocket
-
-            # Run the listen method in the background and name the task for easier debugging
-            self.listen_task = asyncio.create_task(
-                self.listen(), name="WebSocketListenTask"
-            )
+                await asyncio.sleep(delay)
+                delay = min(delay * 2, self._RECONNECT_MAX_DELAY)
+            else:
+                WS_LOGGER.info("WeatherFlow websocket reconnected")
+                return True
+        return False
 
     async def listen(self):
+        """Dispatch websocket messages, reconnecting if the connection drops."""
         self.is_listening = True
         assert self.websocket is not None
         try:
-            async for message in self.websocket:
-                WS_LOGGER.debug(f"Received message: {message}")
-                data = json.loads(message)
+            while True:
                 try:
-                    response = WebsocketResponseBuilder.build_response(data)
-                    if response is None:
-                        WS_LOGGER.info(f"Received invalid WS Status Message {data}")
-                    self.messages[data["type"]] = response
-
-                    if data["type"] in self.callbacks:
-                        if asyncio.iscoroutinefunction(self.callbacks[data["type"]]):
-                            WS_LOGGER.debug(
-                                f"Calling ASYNC callback for message type: {data['type']}"
+                    async for message in self.websocket:
+                        try:
+                            await self._handle_message(message)
+                        except Exception:
+                            WS_LOGGER.exception(
+                                f"Failed to handle websocket message: {message}"
                             )
-                            # If it is, use 'await' to call it
-                            await self.callbacks[data["type"]](response)
-                        else:
-                            WS_LOGGER.debug(
-                                f"Calling SYNC callback for message type: {data['type']}"
-                            )
-                            # If it's not, call it normally
-                            self.callbacks[data["type"]](response)
-                    else:
-                        WS_LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
-                except ValueError:
-                    if EventType.INVALID.value in self.callbacks:
-                        if asyncio.iscoroutinefunction(
-                            self.callbacks[EventType.INVALID.value]
-                        ):
-                            # If it is, use 'await' to call it
-                            await self.callbacks[EventType.INVALID.value](data)
-                        else:
-                            # If it's not, call it normally
-                            self.callbacks[EventType.INVALID.value](data)
-                    else:
-                        WS_LOGGER.warning(f"Unrecognized WS Message: {message}")
+                except asyncio.CancelledError:
+                    raise
+                except Exception as err:
+                    WS_LOGGER.warning(f"Websocket connection lost: {err}")
+                finally:
+                    self.is_listening = False
 
-                    continue
-
+                if self._closing or not await self._reconnect():
+                    break
+                self.is_listening = True
         finally:
             self.is_listening = False
+
+    async def _handle_message(self, message: str) -> None:
+        """Parse a raw websocket message and dispatch it to callbacks."""
+        WS_LOGGER.debug(f"Received message: {message}")
+        data = json.loads(message)
+        try:
+            response = WebsocketResponseBuilder.build_response(data)
+            if response is None:
+                WS_LOGGER.info(f"Received invalid WS Status Message {data}")
+            self.messages[data["type"]] = response
+
+            if data["type"] in self.callbacks:
+                if asyncio.iscoroutinefunction(self.callbacks[data["type"]]):
+                    WS_LOGGER.debug(
+                        f"Calling ASYNC callback for message type: {data['type']}"
+                    )
+                    # If it is, use 'await' to call it
+                    await self.callbacks[data["type"]](response)
+                else:
+                    WS_LOGGER.debug(
+                        f"Calling SYNC callback for message type: {data['type']}"
+                    )
+                    # If it's not, call it normally
+                    self.callbacks[data["type"]](response)
+            else:
+                WS_LOGGER.debug(f"NO CALLBACK for message type: {data['type']}")
+        except ValueError:
+            if EventType.INVALID.value in self.callbacks:
+                if asyncio.iscoroutinefunction(self.callbacks[EventType.INVALID.value]):
+                    # If it is, use 'await' to call it
+                    await self.callbacks[EventType.INVALID.value](data)
+                else:
+                    # If it's not, call it normally
+                    self.callbacks[EventType.INVALID.value](data)
+            else:
+                WS_LOGGER.warning(f"Unrecognized WS Message: {message}")
 
     async def _send(self, message):
         if self.websocket:
@@ -289,20 +362,30 @@ class WeatherFlowWebsocketAPI:
         """
         Stop listening for all devices - waits for acknowledgement
         """
-        stop_tasks = []
-        for device_id in self.device_ids:
-            stop_tasks.extend(
-                [
-                    self.send_message_and_wait(ListenStopMessage(device_id=device_id)),
-                    self.send_message_and_wait(
-                        RapidWindListenStopMessage(device_id=device_id)
-                    ),
-                ]
+        subscriptions = [
+            (msg_type, device_id)
+            for msg_type, device_id in self._subscriptions
+            if msg_type in self._STOP_MESSAGE_TYPES
+        ]
+        self._subscriptions.clear()
+
+        if not self.is_connected():
+            return
+
+        covered_ids = set()
+        for msg_type, device_id in subscriptions:
+            covered_ids.add(str(device_id))
+            await self.send_message_and_wait(
+                self._STOP_MESSAGE_TYPES[msg_type](device_id=device_id)
             )
 
-        if stop_tasks:
-            for task in stop_tasks:
-                await task
+        for device_id in self.device_ids:
+            if str(device_id) in covered_ids:
+                continue
+            await self.send_message_and_wait(ListenStopMessage(device_id=device_id))
+            await self.send_message_and_wait(
+                RapidWindListenStopMessage(device_id=device_id)
+            )
 
         WS_LOGGER.debug("Stopped listening for all devices 🙉️")
 
@@ -313,9 +396,7 @@ class WeatherFlowWebsocketAPI:
         Args:
             timeout (float): Maximum time to wait for tasks to complete (default: 5.0 seconds)
         """
-        if not self.is_connected:
-            return
-
+        self._closing = True
         await self.stop_all_listeners()
 
         # Cancel the listen task
@@ -331,21 +412,22 @@ class WeatherFlowWebsocketAPI:
                 WS_LOGGER.error(f"Exception during listen task cancellation: {e}")
 
         # Close the WebSocket connection
-        if self.websocket:
+        websocket = self.websocket
+        if websocket is not None:
             WS_LOGGER.debug(
-                f"Attempting to close WebSocket at memory address: {id(self.websocket)}"
+                f"Attempting to close WebSocket at memory address: {id(websocket)}"
             )
             try:
-                await asyncio.wait_for(self.websocket.close(), timeout=timeout)
+                await asyncio.wait_for(websocket.close(), timeout=timeout)
             except TimeoutError:
                 WS_LOGGER.warning("WebSocket close operation timed out")
+            except (WebSocketException, OSError) as e:
+                WS_LOGGER.debug(f"WebSocket close failed: {e}")
             except Exception as e:
                 WS_LOGGER.error(f"Exception during WebSocket close operation: {e}")
             finally:
-                if self.websocket.state is WebSocketState.CLOSED:
-                    WS_LOGGER.debug("WebSocket connection successfully closed")
-                else:
-                    WS_LOGGER.warning("WebSocket connection not closed")
+                if WeatherFlowWebsocketAPI._shared_websocket is websocket:
+                    WeatherFlowWebsocketAPI._shared_websocket = None
                 self.websocket = None
 
         self.is_listening = False
