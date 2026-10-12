@@ -1,11 +1,14 @@
 # Changelog
 
 All notable changes to this project will be documented in this file.
-## [1.5.10] - 2026-08-12
+## [1.5.12] - 2026-10-12
 
 ### Bug Fixes
 
-- Update uv.lock for aiohttp>=3.14.3
-- Bump to v1.5.10 with synced uv.lock
+- Reconnect dropped websocket listener and clean up shared socket on close
+
+### Miscellaneous
+
+- Bump version to 1.5.12
 
 
