@@ -10,6 +10,73 @@ from weatherflow4py.models.ws.custom_types import (
 )
 
 
+@dataclass(frozen=True)
+class BatteryCurvePoint:
+    voltage: float
+    percent: float
+
+
+ALKALINE_BATTERY_CURVE = [
+    BatteryCurvePoint(1.10, 0),
+    BatteryCurvePoint(1.20, 10),
+    BatteryCurvePoint(1.23, 20),
+    BatteryCurvePoint(1.26, 30),
+    BatteryCurvePoint(1.28, 40),
+    BatteryCurvePoint(1.30, 50),
+    BatteryCurvePoint(1.32, 60),
+    BatteryCurvePoint(1.34, 70),
+    BatteryCurvePoint(1.38, 80),
+    BatteryCurvePoint(1.44, 90),
+    BatteryCurvePoint(1.59, 100),
+]
+
+LTO_BATTERY_CURVE = [
+    BatteryCurvePoint(2.00, 0),
+    BatteryCurvePoint(2.10, 5),
+    BatteryCurvePoint(2.15, 10),
+    BatteryCurvePoint(2.16, 20),
+    BatteryCurvePoint(2.19, 30),
+    BatteryCurvePoint(2.20, 40),
+    BatteryCurvePoint(2.23, 50),
+    BatteryCurvePoint(2.28, 60),
+    BatteryCurvePoint(2.32, 70),
+    BatteryCurvePoint(2.40, 80),
+    BatteryCurvePoint(2.50, 90),
+    BatteryCurvePoint(2.52, 95),
+    BatteryCurvePoint(2.70, 100),
+]
+
+
+def _battery_percent(
+    battery_voltage: float, battery_curve: list[BatteryCurvePoint]
+) -> float:
+    if battery_voltage <= battery_curve[0].voltage:
+        return battery_curve[0].percent
+
+    if battery_voltage >= battery_curve[-1].voltage:
+        return battery_curve[-1].percent
+
+    for idx, left in enumerate(battery_curve[:-1]):
+        right = battery_curve[idx + 1]
+        if left.voltage <= battery_voltage <= right.voltage:
+            pct_per_volt = (right.percent - left.percent) / (
+                right.voltage - left.voltage
+            )
+            return left.percent + pct_per_volt * (battery_voltage - left.voltage)
+
+    raise RuntimeError("Failed to determine battery percentage")
+
+
+def alkaline_battery_percent(battery_voltage: float) -> float:
+    """Estimate alkaline battery percentage using pyweatherflowudp's curve."""
+    return _battery_percent(battery_voltage, ALKALINE_BATTERY_CURVE)
+
+
+def lto_battery_percent(battery_voltage: float) -> float:
+    """Estimate lithium titanate battery percentage using pyweatherflowudp's curve."""
+    return _battery_percent(battery_voltage, LTO_BATTERY_CURVE)
+
+
 @dataclass
 class base_obs:
     """Base observation class with a class method for creating instances from lists."""
@@ -17,6 +84,11 @@ class base_obs:
     @classmethod
     def from_list(cls: type["base_obs"], lst: list) -> "base_obs":
         return cls(*lst)
+
+    @property
+    def battery_voltage(self) -> float:
+        """Return the battery voltage."""
+        return cast(float, getattr(self, "battery"))
 
 
 # Define the base observation classes with a class method for creating instances from lists
@@ -41,6 +113,11 @@ class obs_sky(base_obs):
     nc_rain: float
     local_day_nc_rain_accumulation: float
     precipitation_analysis_type: PrecipitationAnalysisType
+
+    @property
+    def battery_percent(self) -> float:
+        """Return the estimated battery level percentage."""
+        return alkaline_battery_percent(self.battery_voltage / 2)
 
 
 @dataclass
@@ -77,6 +154,11 @@ class obs_st(base_obs):
             self.precipitation_analysis_type
         )
 
+    @property
+    def battery_percent(self) -> float:
+        """Return the estimated battery level percentage."""
+        return lto_battery_percent(self.battery_voltage)
+
 
 @dataclass
 class obs_air(base_obs):
@@ -90,6 +172,11 @@ class obs_air(base_obs):
     lightning_strike_average_distance: float
     battery: float
     report_interval: int
+
+    @property
+    def battery_percent(self) -> float:
+        """Return the estimated battery level percentage."""
+        return alkaline_battery_percent(self.battery_voltage / 2)
 
 
 class ObservationFactory:
@@ -232,6 +319,14 @@ class WebsocketObservation:
     @property
     def battery(self) -> float:
         return self.first.battery
+
+    @property
+    def battery_voltage(self) -> float:
+        return self.first.battery_voltage
+
+    @property
+    def battery_percent(self) -> float:
+        return self.first.battery_percent
 
     @property
     def report_interval(self) -> int:
